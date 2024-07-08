@@ -1,16 +1,37 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { AbstractDocument } from '@app/common';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-@Schema({ versionKey: false })
-export class FileUpload extends AbstractDocument {
+@Schema({ timestamps: true })
+export class UploadImage extends AbstractDocument {
+  @Prop()
+  userCode: string;
+
   @Prop()
   name: string;
+
+  @Prop()
+  imgPath: string;
+
+  @Prop()
+  receiptDate: string;
+
+  @Prop()
+  receiptType: string;
 
   @Prop()
   price: number;
 
   @Prop()
-  phoneNumber: string;
+  memo: string;
+
+  @Prop()
+  numberOfPeople: number;
+
+  createdAt: Date;
+
+  updatedAt: Date;
 }
 
-export const FileUploadSchema = SchemaFactory.createForClass(FileUpload);
+export type UploadImageDocument = UploadImage & Document;
+
+export const UploadImageSchema = SchemaFactory.createForClass(UploadImage);
