@@ -1,0 +1,1 @@
+export const AMAZON_AWS_CONFIG = 'AMAZON_AWS_CONFIG';
