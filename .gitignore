@@ -1,10 +1,11 @@
 .dockerignore
 docker-compose.yml
-/apps/file-upload/.env
 package-lock.json
 
 # dotenv environment variable files
 .env
+/apps/file-upload/.env
+/apps/auth/.env
 
 # compiled output
 /dist
