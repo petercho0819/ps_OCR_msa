@@ -12,7 +12,7 @@ import { ConfigModule } from '../config';
       }),
       inject: [ConfigService],
     }),
-  ]
+  ],
 })
 export class DatabaseModule {
   static forFeature(models: ModelDefinition[]) {

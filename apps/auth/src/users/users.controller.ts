@@ -6,8 +6,8 @@ import { CreateUserDTO } from './dto/create-user.dto';
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
-  @Post()
-  async createUser(@Body() createUserDto: CreateUserDTO) {
-    return this.userService.create(createUserDto);
+  @Post('master')
+  async createMasterMember(@Body() createUserDto: CreateUserDTO) {
+    return this.userService.createMasterMember(createUserDto);
   }
 }
