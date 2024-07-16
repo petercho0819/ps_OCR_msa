@@ -1,8 +1,9 @@
-import { Connection, Model } from 'mongoose';
+import { Connection, Model, Types } from 'mongoose';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Injectable, Logger } from '@nestjs/common';
 import { AbstractRepository } from '@app/common';
 import { Member } from './models/user.schema';
+import { CreateUserDTO, CreateUserDetailDTO } from './dto/create-user.dto';
 
 @Injectable()
 export class MemberRepository extends AbstractRepository<Member> {
@@ -37,13 +38,20 @@ export class MemberRepository extends AbstractRepository<Member> {
     }
   }
 
-  async createMasterMember(createMemberDto) {
+  async createMasterMember(createMemberDto: CreateUserDetailDTO) {
+    console.log(
+      '🚀 ~ MemberRepository ~ createMasterMember ~ createMemberDto:',
+      createMemberDto,
+    );
     this.logger.verbose(`${MemberRepository.name} - createMasterMember`);
     try {
-      const result = await this.model.create(createMemberDto);
+      const result = await this.userModel.create({
+        _id: new Types.ObjectId(),
+        ...createMemberDto,
+      });
       return result;
     } catch (error) {
-      this.logger.error(error.message);
+      this.logger.error('eer', error.message);
       return null;
     }
   }

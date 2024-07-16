@@ -18,7 +18,7 @@ import { HttpModule } from '@nestjs/axios';
         MONGODB_URI: Joi.string().required(),
         PORT: Joi.number().required(),
       }),
-      envFilePath: './apps/file-upload/.env',
+      envFilePath: './apps/receipt/.env',
     }),
     DatabaseModule,
     MongooseModule.forFeature([

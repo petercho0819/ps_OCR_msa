@@ -17,18 +17,18 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
     private readonly connection: Connection,
   ) {}
 
-  async create(
-    document: Omit<TDocument, '_id'>,
-    options?: SaveOptions,
-  ): Promise<TDocument> {
-    const createdDocument = new this.model({
-      ...document,
-      _id: new Types.ObjectId(),
-    });
-    return (
-      await createdDocument.save(options)
-    ).toJSON() as unknown as TDocument;
-  }
+  // async create(
+  //   document: Omit<TDocument, '_id'>,
+  //   options?: SaveOptions,
+  // ): Promise<TDocument> {
+  //   const createdDocument = new this.model({
+  //     ...document,
+  //     _id: new Types.ObjectId(),
+  //   });
+  //   return (
+  //     await createdDocument.save(options)
+  //   ).toJSON() as unknown as TDocument;
+  // }
 
 //   async findOne(filterQuery: FilterQuery<TDocument>): Promise<TDocument> {
 //     const document = await this.model.findOne(filterQuery, {}, { lean: true });

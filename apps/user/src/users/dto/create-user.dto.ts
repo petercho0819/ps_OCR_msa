@@ -11,3 +11,10 @@ export class CreateUserDTO {
   @IsString()
   name: string;
 }
+
+export class CreateUserDetailDTO extends CreateUserDTO {
+  @IsString()
+  role: string;
+  @IsString()
+  memberCode: string;
+}

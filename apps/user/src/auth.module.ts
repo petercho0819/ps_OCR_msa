@@ -20,7 +20,7 @@ import { JwtStrategy } from './jwt.strategy';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: './apps/auth/.env',
+      envFilePath: './apps/user/.env',
       validationSchema: Joi.object({
         SECRET_OR_KEY: Joi.string().required(),
         HTTP_PORT: Joi.number().required(),

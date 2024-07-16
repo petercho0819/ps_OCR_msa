@@ -4,8 +4,11 @@ import { ValidationPipe } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { Transport } from '@nestjs/microservices';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
 
 async function bootstrap() {
+  dotenv.config({ path: path.resolve(__dirname, '../.env') });
   const app = await NestFactory.create(AuthModule);
   app.connectMicroservice({
     transport: Transport.TCP,
