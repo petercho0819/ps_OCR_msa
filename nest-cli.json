@@ -18,13 +18,13 @@
         "tsConfigPath": "apps/receipt/tsconfig.app.json"
       }
     },
-    "user": {
+    "auth": {
       "type": "application",
-      "root": "apps/user",
+      "root": "apps/auth",
       "entryFile": "main",
-      "sourceRoot": "apps/user/src",
+      "sourceRoot": "apps/auth/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/user/tsconfig.app.json"
+        "tsConfigPath": "apps/auth/tsconfig.app.json"
       }
     },
     "common": {

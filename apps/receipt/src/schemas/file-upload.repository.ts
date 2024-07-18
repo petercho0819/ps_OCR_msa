@@ -9,10 +9,10 @@ import { UploadOCRSVCDTO } from '../dto/UploadOCRDTO.dto';
 export class FileUploadRepository extends AbstractRepository<UploadImage> {
   protected readonly logger = new Logger(FileUploadRepository.name);
   constructor(
-    @InjectModel(UploadImage.name) readonly uploadModel: Model<UploadImage>,
-    @InjectConnection() connection: Connection,
+    @InjectModel(UploadImage.name)
+    protected readonly uploadModel: Model<UploadImage>,
   ) {
-    super(uploadModel, connection);
+    super(uploadModel);
   }
   async createUploadImage(dto: UploadOCRSVCDTO) {
     this.logger.log(`createUploadImage: ${JSON.stringify(dto)} `);

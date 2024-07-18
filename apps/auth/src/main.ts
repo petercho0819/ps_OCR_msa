@@ -4,17 +4,16 @@ import { ValidationPipe } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { Transport } from '@nestjs/microservices';
-import * as dotenv from 'dotenv';
-import * as path from 'path';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
-  dotenv.config({ path: path.resolve(__dirname, '../.env') });
   const app = await NestFactory.create(AuthModule);
+  const configService = app.get(ConfigService);
   app.connectMicroservice({
     transport: Transport.TCP,
     options: {
       host: '0.0.0.0',
-      port: process.env.TCP_PORT,
+      port: configService.get('TCP_PORT'),
     },
   });
   app.use(cookieParser());
@@ -26,6 +25,8 @@ async function bootstrap() {
   // app.useLogger(app.get(Logger));
 
   await app.startAllMicroservices();
-  await app.listen(process.env.HTTP_PORT);
+  await app.listen(configService.get('HTTP_PORT'));
+  console.log("🚀 ~ auth - ('TCP_PORT')", configService.get('TCP_PORT'));
+  console.log("🚀 ~ auth - ('HTTP_PORT')", configService.get('HTTP_PORT'));
 }
 bootstrap();

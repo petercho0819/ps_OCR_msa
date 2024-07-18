@@ -15,7 +15,7 @@ export class FileUploadService {
 
   constructor(
     private readonly fileUploadRepository: FileUploadRepository,
-    private readonly httpService: HttpService,
+    // private readonly httpService: HttpService,
     private readonly amazonService: AmazonService,
   ) {}
 
@@ -72,33 +72,33 @@ export class FileUploadService {
         timestamp: moment().unix(),
       };
 
-      const result2 = await this.httpService.axiosRef.post(
-        process.env.NAVER_OCR_URL_FOR_RECIPT,
-        naverOcrDto,
-        {
-          headers: {
-            'X-OCR-SECRET': process.env.X_OCR_SECRET_FOR_RECEIPT,
-            'Content-Type': 'application/json',
-          },
-        },
-      );
+      // const result2 = await this.httpService.axiosRef.post(
+      //   process.env.NAVER_OCR_URL_FOR_RECIPT,
+      //   naverOcrDto,
+      //   {
+      //     headers: {
+      //       'X-OCR-SECRET': process.env.X_OCR_SECRET_FOR_RECEIPT,
+      //       'Content-Type': 'application/json',
+      //     },
+      //   },
+      // );
 
-      const money =
-        result2?.data?.images?.[0].receipt?.result?.totalPrice?.price?.formatted
-          ?.value || 0;
-      const year =
-        result2?.data?.images?.[0].receipt?.result?.paymentInfo?.date?.formatted
-          ?.year || '';
-      const month =
-        result2?.data?.images?.[0].receipt?.result?.paymentInfo?.date?.formatted
-          ?.month || '';
-      const day =
-        result2?.data?.images?.[0].receipt?.result?.paymentInfo?.date?.formatted
-          ?.day || '';
-      return {
-        totalPrice: money,
-        date: `${year}-${month}-${day}`,
-      };
+      // const money =
+      //   result2?.data?.images?.[0].receipt?.result?.totalPrice?.price?.formatted
+      //     ?.value || 0;
+      // const year =
+      //   result2?.data?.images?.[0].receipt?.result?.paymentInfo?.date?.formatted
+      //     ?.year || '';
+      // const month =
+      //   result2?.data?.images?.[0].receipt?.result?.paymentInfo?.date?.formatted
+      //     ?.month || '';
+      // const day =
+      //   result2?.data?.images?.[0].receipt?.result?.paymentInfo?.date?.formatted
+      //     ?.day || '';
+      // return {
+      //   totalPrice: money,
+      //   date: `${year}-${month}-${day}`,
+      // };
     } catch (e) {
       this.logger.error(e);
     }

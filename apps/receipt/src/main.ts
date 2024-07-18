@@ -2,14 +2,17 @@ import { NestFactory } from '@nestjs/core';
 import { FileUploadModule } from './file-upload.module';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
-import * as dotenv from 'dotenv';
-import * as path from 'path';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(FileUploadModule);
-  dotenv.config({ path: path.resolve(__dirname, '../.env') });
+  app.use(cookieParser());
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+    }),
+  );
   const configService = app.get(ConfigService);
   await app.listen(configService.get('PORT'));
 }

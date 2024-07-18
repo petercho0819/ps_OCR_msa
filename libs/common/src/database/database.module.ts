@@ -9,7 +9,7 @@ import { ConfigModule } from '../config';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         uri: configService.get('MONGODB_URI'),
-        dbName: configService.get('DB_NAME'),
+        dbName: process.env.DB_NAME,
       }),
       inject: [ConfigService],
     }),
