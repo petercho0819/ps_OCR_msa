@@ -9,6 +9,7 @@ import { ReceiptController } from './receipt.controller';
 import { ReceiptService } from './receipt.service';
 import { Receipt, ReceiptSchema } from './schemas/receipt.schema';
 import { ReceiptRepository } from './schemas/receipt.repository';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -47,8 +48,9 @@ import { ReceiptRepository } from './schemas/receipt.repository';
         inject: [ConfigService],
       },
     ]),
+    HttpModule,
   ],
   controllers: [ReceiptController],
   providers: [ReceiptService, ReceiptRepository],
 })
-export class FileUploadModule {}
+export class ReceiptModule {}

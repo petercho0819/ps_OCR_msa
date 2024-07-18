@@ -1,11 +1,11 @@
 import { NestFactory } from '@nestjs/core';
-import { FileUploadModule } from './receipt.module';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
+import { ReceiptModule } from './receipt.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(FileUploadModule);
+  const app = await NestFactory.create(ReceiptModule);
   app.use(cookieParser());
 
   app.useGlobalPipes(
