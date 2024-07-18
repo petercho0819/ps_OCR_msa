@@ -2,7 +2,7 @@ import { AbstractDocument } from '@app/common';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema({ timestamps: true })
-export class UploadImage extends AbstractDocument {
+export class Receipt extends AbstractDocument {
   @Prop()
   userCode: string;
 
@@ -32,6 +32,6 @@ export class UploadImage extends AbstractDocument {
   updatedAt: Date;
 }
 
-export type UploadImageDocument = UploadImage & Document;
+export type ReceiptDocument = Receipt & Document;
 
-export const UploadImageSchema = SchemaFactory.createForClass(UploadImage);
+export const ReceiptSchema = SchemaFactory.createForClass(Receipt);

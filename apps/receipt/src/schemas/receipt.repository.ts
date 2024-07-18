@@ -1,16 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AbstractRepository } from '@app/common';
-import { UploadImage } from './file-upload.schema';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Connection, Model, Types } from 'mongoose';
 import { UploadOCRSVCDTO } from '../dto/UploadOCRDTO.dto';
+import { Receipt } from './receipt.schema';
 
 @Injectable()
-export class FileUploadRepository extends AbstractRepository<UploadImage> {
-  protected readonly logger = new Logger(FileUploadRepository.name);
+export class ReceiptRepository extends AbstractRepository<Receipt> {
+  protected readonly logger = new Logger(ReceiptRepository.name);
   constructor(
-    @InjectModel(UploadImage.name)
-    protected readonly uploadModel: Model<UploadImage>,
+    @InjectModel(Receipt.name)
+    protected readonly uploadModel: Model<Receipt>,
   ) {
     super(uploadModel);
   }

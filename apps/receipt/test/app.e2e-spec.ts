@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { FileUploadModule } from '../src/file-upload.module';
+import { FileUploadModule } from '../src/receipt.module';
 
 describe('FileUploadController (e2e)', () => {
   let app: INestApplication;

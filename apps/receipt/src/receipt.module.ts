@@ -4,18 +4,16 @@ import { AUTH_SERVICE, DatabaseModule } from '@app/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { UploadImage, UploadImageSchema } from './schemas/file-upload.schema';
 import { AmazonModule } from '@app/common/amazon/amazon.module';
-import { FileUploadController } from './file-upload.controller';
-import { FileUploadService } from './file-upload.service';
-import { FileUploadRepository } from './schemas/file-upload.repository';
+import { ReceiptController } from './receipt.controller';
+import { ReceiptService } from './receipt.service';
+import { Receipt, ReceiptSchema } from './schemas/receipt.schema';
+import { ReceiptRepository } from './schemas/receipt.repository';
 
 @Module({
   imports: [
     DatabaseModule,
-    DatabaseModule.forFeature([
-      { name: UploadImage.name, schema: UploadImageSchema },
-    ]),
+    DatabaseModule.forFeature([{ name: Receipt.name, schema: ReceiptSchema }]),
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: Joi.object({
@@ -50,7 +48,7 @@ import { FileUploadRepository } from './schemas/file-upload.repository';
       },
     ]),
   ],
-  controllers: [FileUploadController],
-  providers: [FileUploadService, FileUploadRepository],
+  controllers: [ReceiptController],
+  providers: [ReceiptService, ReceiptRepository],
 })
 export class FileUploadModule {}

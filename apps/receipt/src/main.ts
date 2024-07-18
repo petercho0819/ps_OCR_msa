@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { FileUploadModule } from './file-upload.module';
+import { FileUploadModule } from './receipt.module';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
