@@ -11,10 +11,15 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UserDocument, UserSchema } from './users/models/user.schema';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { MemberRepository } from './users/user.repository';
 
 @Module({
   imports: [
     UsersModule,
+    DatabaseModule,
+    DatabaseModule.forFeature([
+      { name: UserDocument.name, schema: UserSchema },
+    ]),
     ConfigModule.forRoot({
       isGlobal: true,
       // envFilePath: './apps/user/.env',
@@ -36,6 +41,6 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, MemberRepository],
 })
 export class AuthModule {}

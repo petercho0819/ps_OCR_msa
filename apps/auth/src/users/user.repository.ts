@@ -11,9 +11,14 @@ export class MemberRepository extends AbstractRepository<UserDocument> {
     @InjectModel(UserDocument.name)
     protected readonly userModel: Model<UserDocument>,
   ) {
-    super(userModel,);
+    super(userModel);
   }
-  // async create(dto) {
-  //   await this.userModel.create(dto);
-  // }
+  async getMemberInfoByEmail(email) {
+    this.logger.log(`getMemberByEmail ${email}`);
+
+    const query: { email: string } = { email };
+
+    const member = await this.userModel.findOne(query);
+    return member;
+  }
 }

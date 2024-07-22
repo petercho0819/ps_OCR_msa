@@ -1,3 +1,11 @@
-export interface Tokenpayload {
-  userId: string;
+export default class Tokenpayload {
+  email: string;
+
+  role: string;
+
+  companyCode: string;
+
+  memberCode: string;
+
+  name: string;
 }

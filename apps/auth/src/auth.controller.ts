@@ -14,12 +14,13 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(
-    @CurrentUser() user: UserDocument,
+    @CurrentUser() user,
     @Res({ passthrough: true }) response: Response,
   ) {
     const token = await this.authService.login(user, response);
-    response.send({ user, token });
+    response.send({ token });
   }
+
   @UseGuards(JwtAuthGuard)
   @MessagePattern('authenticate')
   async authenticate(@Payload() data: any) {
