@@ -14,8 +14,8 @@ export class ReceiptRepository extends AbstractRepository<ReceiptDocument> {
   ) {
     super(uploadModel);
   }
-  async createUploadImage(dto: UploadOCRSVCDTO) {
-    this.logger.log(`createUploadImage: ${JSON.stringify(dto)} `);
+  async createReceipt(dto: UploadOCRSVCDTO) {
+    this.logger.log(`createReceipt: ${JSON.stringify(dto)} `);
     return await this.uploadModel.create({
       _id: new Types.ObjectId(),
       ...dto,

@@ -8,6 +8,8 @@ import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { NaverOcrDTO } from './interface';
 import { ReceiptRepository } from './schemas/receipt.repository';
+import { UserDTO } from '@app/common';
+import { DeleteReceiptDTO } from './dto/delete-receipt.dto';
 
 @Injectable()
 export class ReceiptService {
@@ -19,11 +21,11 @@ export class ReceiptService {
     private readonly amazonService: AmazonService,
   ) {}
 
-  async uploadImage(
+  async createReceipt(
     uploadOCRDto: UploadOCRDTO,
     { OCRName, OCRBuffer, OCRMimetype },
   ) {
-    this.logger.verbose(`${ReceiptService.name} - uploadImage`);
+    this.logger.verbose(`${ReceiptService.name} - createReceipt`);
 
     // file 절대경로로 업데이트
     // 1. aws에 업로드
@@ -40,7 +42,7 @@ export class ReceiptService {
         imgPath = `${process.env.AMAZON_BUCKET_BASE}/ocrImage/${encodedFileName}`;
       }
       // 2. db에 저장
-      await this.receiptRepository.createUploadImage({
+      await this.receiptRepository.createReceipt({
         ...uploadOCRDto,
         numberOfPeople: Number(uploadOCRDto.numberOfPeople),
         price: Number(uploadOCRDto.price),
@@ -102,5 +104,9 @@ export class ReceiptService {
     } catch (e) {
       this.logger.error(e);
     }
+  }
+
+  deleteReciept(user: UserDTO, body: DeleteReceiptDTO) {
+    throw new Error('Method not implemented.');
   }
 }
