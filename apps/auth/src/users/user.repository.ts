@@ -13,6 +13,18 @@ export class MemberRepository extends AbstractRepository<UserDocument> {
   ) {
     super(userModel);
   }
+
+  async findByEmail(email: string) {
+    this.logger.verbose(`${MemberRepository.name} - getMember`);
+    const result = await this.userModel.findOne(
+      {
+        email,
+      },
+      { password: 0 },
+    );
+    return result;
+  }
+
   async getMemberInfoByEmail(email) {
     this.logger.log(`getMemberByEmail ${email}`);
 
@@ -20,5 +32,40 @@ export class MemberRepository extends AbstractRepository<UserDocument> {
 
     const member = await this.userModel.findOne(query);
     return member;
+  }
+
+  async getMember(
+    companyCode: string,
+    searchValue: string,
+    page: number,
+    limit: number,
+  ) {
+    this.logger.verbose(`${MemberRepository.name} - getMember`);
+
+    const query: any = { companyCode };
+
+    if (searchValue) {
+      query.name = { $regex: searchValue, $options: 'i' }; // case-insensitive search
+    }
+
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const data = await this.userModel
+      .find(query)
+      .skip(skip)
+      .limit(Number(limit))
+      .exec();
+
+    const totalCount = await this.userModel.countDocuments(query).exec();
+    const totalPages = Math.ceil(totalCount / Number(limit));
+
+    return {
+      totalCount,
+      currentPage: page,
+      totalPages,
+      firstPage: 1,
+      lastPage: totalPages,
+      paginatedData: data,
+    };
   }
 }

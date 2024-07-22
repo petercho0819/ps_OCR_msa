@@ -19,7 +19,7 @@ export class AuthService {
     const memberData = await this.memberRepository.getMemberInfoByEmail(email);
     // Calculate the token expiration time by adding seconds to the current date
     const expires = new Date();
-    expires.setSeconds(expires.getSeconds() + 600);
+    expires.setSeconds(expires.getSeconds() + 360000);
 
     const tokenDto = <Tokenpayload>{
       email: memberData.email,

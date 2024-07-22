@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Logger, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  Logger,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { CurrentUser } from '../current-user.decorator';
@@ -29,6 +39,40 @@ export class UsersController {
     this.logger.log(`user - ${JSON.stringify(user)}`);
     this.logger.log(`Body - ${JSON.stringify(Body)}`);
     return this.userService.createMember(user, createUserDto);
+  }
+
+  @Get('list')
+  @UseGuards(JwtAuthGuard)
+  async getMember(
+    @CurrentUser() user: UserDTO,
+    @Query('searchValue') searchValue: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    this.logger.verbose(`${UsersController.name} - getMember`);
+    try {
+      page = Math.max(1, page);
+      limit = Math.max(1, limit);
+      return await this.userService.getMember(user, searchValue, page, limit);
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(error, 404);
+    }
+  }
+
+  @Get(':email')
+  @UseGuards(JwtAuthGuard)
+  async getMemberDetail(
+    @CurrentUser() user: UserDTO,
+    @Param('email') email: string,
+  ) {
+    this.logger.verbose(`${UsersController.name} - getMemberDetail`);
+    try {
+      return await this.userService.getMemberDetail(user, email);
+    } catch (error) {
+      this.logger.error(error);
+      return new HttpException(error, 404);
+    }
   }
 
   @Get()

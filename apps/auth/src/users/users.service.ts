@@ -1,6 +1,7 @@
 import {
   Injectable,
   Logger,
+  NotFoundException,
   UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -27,6 +28,36 @@ export class UsersService {
       memberCode: getGenerateCode(),
       role: ADMIN,
     });
+  }
+
+  async getMemberDetail(user: UserDTO, email: string) {
+    this.logger.verbose(`${UsersService.name} - getMemberDetail`);
+
+    try {
+      const member = await this.memberRepository.findByEmail(email);
+      if (!member) {
+        throw new NotFoundException('member not found');
+      }
+      return member;
+    } catch (error) {
+      this.logger.error(error);
+    }
+  }
+
+  async getMember(
+    user: UserDTO,
+    searchValue: string,
+    page: number,
+    limit: number,
+  ) {
+    this.logger.verbose(`${UsersService.name} - getMember`);
+    const { companyCode } = user;
+    return await this.memberRepository.getMember(
+      companyCode,
+      searchValue,
+      page,
+      limit,
+    );
   }
 
   async createMember(user: UserDTO, createUserDto: CreateUserDTO) {
@@ -61,7 +92,7 @@ export class UsersService {
     return user;
   }
 
-  async getUser(getUserDto: GetUserDto) {
-    return this.memberRepository.findOne(getUserDto);
+  async getUser(email: GetUserDto) {
+    return this.memberRepository.findOne(email);
   }
 }
