@@ -10,7 +10,6 @@ import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UserDocument, UserSchema } from './users/models/user.schema';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MemberRepository } from './users/user.repository';
 
 @Module({
@@ -34,7 +33,7 @@ import { MemberRepository } from './users/user.repository';
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('SECRET_OR_KEY'),
         signOptions: {
-          expiresIn: '600s',
+          expiresIn: '600d',
         },
       }),
       inject: [ConfigService],

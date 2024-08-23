@@ -6,6 +6,7 @@ package-lock.json
 .env
 /apps/receipt/.env
 /apps/auth/.env
+/apps/company/.env
 
 # compiled output
 /dist

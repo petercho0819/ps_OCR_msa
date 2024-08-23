@@ -26,7 +26,5 @@ async function bootstrap() {
 
   await app.startAllMicroservices();
   await app.listen(configService.get('HTTP_PORT'));
-  console.log("🚀 ~ auth - ('TCP_PORT')", configService.get('TCP_PORT'));
-  console.log("🚀 ~ auth - ('HTTP_PORT')", configService.get('HTTP_PORT'));
 }
 bootstrap();

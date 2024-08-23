@@ -53,7 +53,13 @@ export class UsersController {
     try {
       page = Math.max(1, page);
       limit = Math.max(1, limit);
-      return await this.userService.getMember(user, searchValue, page, limit);
+      return await this.userService.getMember(
+        user,
+        searchValue,
+        page,
+        limit,
+      );
+
     } catch (error) {
       this.logger.error(error);
       throw new HttpException(error, 404);

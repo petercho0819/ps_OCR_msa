@@ -36,7 +36,6 @@ import { HttpModule } from '@nestjs/axios';
         useFactory: (configService: ConfigService) => {
           const host = configService.get('AUTH_HOST');
           const port = configService.get('AUTH_PORT');
-          console.log(`AUTH_HOST: ${host}, AUTH_PORT: ${port}`);
           return {
             transport: Transport.TCP,
             options: {
