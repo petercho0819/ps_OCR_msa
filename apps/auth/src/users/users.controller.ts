@@ -46,20 +46,14 @@ export class UsersController {
   async getMember(
     @CurrentUser() user: UserDTO,
     @Query('searchValue') searchValue: string,
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
+    @Query('page') page: any = 1,
+    @Query('limit') limit: any = 10,
   ) {
     this.logger.verbose(`${UsersController.name} - getMember`);
     try {
       page = Math.max(1, page);
       limit = Math.max(1, limit);
-      return await this.userService.getMember(
-        user,
-        searchValue,
-        page,
-        limit,
-      );
-
+      return await this.userService.getMember(user, searchValue, page, limit);
     } catch (error) {
       this.logger.error(error);
       throw new HttpException(error, 404);

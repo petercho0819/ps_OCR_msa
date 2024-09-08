@@ -14,8 +14,17 @@ export class CompanyRepository extends AbstractRepository<CompanyDocument> {
     super(companyModel);
   }
 
-  async getCompanyByCompanyCode(companyList: any) {
-    this.logger.verbose(`${CompanyRepository.name} - getCompanyByCompanyCode`);
+  async getCompanyListByCompanyCode(companyList: any) {
+    this.logger.verbose(
+      `${CompanyRepository.name} - getCompanyListByCompanyCode`,
+    );
     return await this.companyModel.find({ companyCode: { $in: companyList } });
+  }
+
+  async getCompanyByCompanyCode(companyCode: any) {
+    this.logger.verbose(
+      `${CompanyRepository.name} - getCompanyListByCompanyCode`,
+    );
+    return await this.companyModel.findOne({ companyCode });
   }
 }

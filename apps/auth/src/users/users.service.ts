@@ -94,6 +94,7 @@ export class UsersService {
     const company = this.company_service
       .send('get_company', companyCodeList)
       .pipe(
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         tap((res) => {}),
         catchError((e) => {
           console.error('Error in catchError:', e);

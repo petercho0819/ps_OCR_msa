@@ -1,5 +1,6 @@
 .dockerignore
 docker-compose.yml
+docker-compose.prod.yml
 package-lock.json
 
 # dotenv environment variable files
@@ -7,6 +8,16 @@ package-lock.json
 /apps/receipt/.env
 /apps/auth/.env
 /apps/company/.env
+/apps/receipt/.env.prod
+/apps/auth/.env.prod
+/apps/company/.env.prod
+
+/apps/receipt/Docker
+/apps/auth/Docker
+/apps/company/Docker
+
+kube-manifests/*
+
 
 # compiled output
 /dist

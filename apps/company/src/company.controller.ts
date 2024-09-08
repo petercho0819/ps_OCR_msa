@@ -16,8 +16,17 @@ export class CompanyController {
   private readonly logger = new Logger(CompanyController.name);
 
   @MessagePattern('get_company')
+  async getCompanyListByCompanyCode(@Payload() data) {
+    this.logger.verbose(
+      `${CompanyController.name} - getCompanyListByCompanyCode`,
+    );
+
+    return this.companyService.getCompanyListByCompanyCode(data);
+  }
+
+  @MessagePattern('getCompanyByCompanyCode')
   async getCompanyByCompanyCode(@Payload() data) {
-    this.logger.verbose(`${CompanyController.name} - get_company`);
+    this.logger.verbose(`${CompanyController.name} - getCompanyByCompanyCode`);
 
     return this.companyService.getCompanyByCompanyCode(data);
   }

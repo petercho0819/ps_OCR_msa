@@ -20,6 +20,12 @@ async function bootstrap() {
       whitelist: true,
     }),
   );
+  app.enableCors({
+    origin: '*',
+    methods: 'GET, HEAD, PUT, PATCH, POST, DELETE, OPTIONS',
+    allowedHeaders: '*', // 모든 헤더를 허용
+    optionsSuccessStatus: 200,
+  });
 
   await app.startAllMicroservices();
 }

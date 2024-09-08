@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AUTH_SERVICE, DatabaseModule } from '@app/common';
+import { AUTH_SERVICE, COMPANY_SERVICE, DatabaseModule } from '@app/common';
 
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
@@ -36,6 +36,21 @@ import { HttpModule } from '@nestjs/axios';
         useFactory: (configService: ConfigService) => {
           const host = configService.get('AUTH_HOST');
           const port = configService.get('AUTH_PORT');
+          return {
+            transport: Transport.TCP,
+            options: {
+              host,
+              port,
+            },
+          };
+        },
+        inject: [ConfigService],
+      },
+      {
+        name: COMPANY_SERVICE,
+        useFactory: (configService: ConfigService) => {
+          const host = configService.get('COMPANY_HOST');
+          const port = configService.get('COMPANY_PORT');
           return {
             transport: Transport.TCP,
             options: {

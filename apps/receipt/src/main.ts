@@ -14,6 +14,16 @@ async function bootstrap() {
     }),
   );
   const configService = app.get(ConfigService);
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: '*', // 모든 헤더를 허용
+    optionsSuccessStatus: 200,
+  });
+  console.log(
+    "🚀 ~ bootstrap ~ configService.get('PORT'):",
+    configService.get('PORT'),
+  );
   await app.listen(configService.get('PORT'));
 }
 bootstrap();

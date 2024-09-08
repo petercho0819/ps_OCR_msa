@@ -10,7 +10,7 @@ import {
 import { INVALID_RECEIPT_TYPE, receiptType } from '../constant';
 import { ReceiptType } from '../interface';
 
-export class UploadOCRDTO {
+export class UploadReceiptDTO {
   @IsNotEmpty()
   @IsString()
   receiptDate: string;
@@ -36,10 +36,14 @@ export class UploadOCRDTO {
   memo: string;
 }
 
-export class UploadOCRSVCDTO extends UploadOCRDTO {
+export class UploadReceiptSVCDTO extends UploadReceiptDTO {
   @IsNotEmpty()
   @IsString()
-  userCode: string;
+  memberCode: string;
+
+  @IsNotEmpty()
+  @IsString()
+  companyCode: string;
 
   @IsNotEmpty()
   @IsString()

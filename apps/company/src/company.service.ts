@@ -7,11 +7,16 @@ export class CompanyService {
 
   constructor(private readonly companyRepository: CompanyRepository) {}
 
-  async getCompanyByCompanyCode(companyCodeList: any) {
-    this.logger.verbose(`${CompanyService.name} - getCompanyByCompanyCode`);
+  async getCompanyListByCompanyCode(companyCodeList: any) {
+    this.logger.verbose(`${CompanyService.name} - getCompanyListByCompanyCode`);
     this.logger.debug(`companyCodeList : ${JSON.stringify(companyCodeList)}`);
-    return await this.companyRepository.getCompanyByCompanyCode(
+    return await this.companyRepository.getCompanyListByCompanyCode(
       companyCodeList,
     );
+  }
+
+  async getCompanyByCompanyCode(companyCode: any) {
+    this.logger.verbose(`${CompanyService.name} - getCompanyByCompanyCode`);
+    return await this.companyRepository.getCompanyByCompanyCode(companyCode);
   }
 }

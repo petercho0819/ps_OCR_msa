@@ -4,10 +4,13 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 @Schema({ timestamps: true })
 export class Receipt extends AbstractDocument {
   @Prop()
-  userCode: string;
+  memberCode: string;
 
   @Prop()
   name: string;
+
+  @Prop()
+  companyCode: string;
 
   @Prop()
   imgPath: string;
@@ -23,6 +26,12 @@ export class Receipt extends AbstractDocument {
 
   @Prop()
   memo: string;
+
+  @Prop()
+  year: string;
+
+  @Prop()
+  month: string;
 
   @Prop()
   numberOfPeople: number;
