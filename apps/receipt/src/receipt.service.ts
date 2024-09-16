@@ -13,6 +13,9 @@ import { UploadReceiptDTO } from './dto/upload-receipt.dto';
 import { UpdateReceiptDTO } from './dto/update-receipt.dto';
 import { ClientProxy } from '@nestjs/microservices';
 import { catchError, of, tap } from 'rxjs';
+import { DownloadReceiptDTO } from './dto/download-receipt.dto';
+import * as ExcelJS from 'exceljs';
+import { DINNER_FEE, TAXI_FEE } from './constant';
 
 @Injectable()
 export class ReceiptService {
@@ -25,6 +28,72 @@ export class ReceiptService {
     private readonly httpService: HttpService,
     private readonly amazonService: AmazonService,
   ) {}
+
+  async getReceiptDetailById(_id: string) {
+    this.logger.verbose(`${ReceiptService.name} - getReceiptDetailById`);
+    return await this.receiptRepository.getReceiptDetailById(_id);
+  }
+
+  async downloadReceiptByExcel(user: UserDTO, body: DownloadReceiptDTO) {
+    this.logger.verbose(`${ReceiptService.name} - getReceiptByYearAndMonth`);
+    const { companyCode, memberCode } = user;
+    const { year, month } = body;
+    const receipt =
+      await this.receiptRepository.getReceiptByYearAndMonthByExcel(
+        year,
+        month,
+        companyCode,
+        memberCode,
+      );
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet(`${year} - ${month}`);
+    const columns = [
+      { header: '일자', key: 'receiptDate', width: 20 },
+      { header: '항목', key: 'receiptType', width: 20 },
+      { header: '가격', key: 'price', width: 10 },
+      { header: '이름', key: 'name', width: 30 },
+      { header: '식대 인원', key: 'numberOfPeople', width: 10 },
+      { header: '메모', key: 'memo', width: 20 },
+      // { header: '영수증', key: 'imgPath', width: 20 },
+    ];
+    worksheet.columns = columns;
+    const headerRow = worksheet.getRow(1);
+
+    headerRow.eachCell((cell, colNumber) => {
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    });
+    receipt.forEach((detail) => {
+      const row = worksheet.addRow({
+        receiptDate: detail.receiptDate,
+        receiptType:
+          detail.receiptType === DINNER_FEE
+            ? '저녁 식대'
+            : detail.receiptType === TAXI_FEE
+            ? '택시비'
+            : '기타',
+        price: detail.price,
+        numberOfPeople: detail.numberOfPeople,
+        name: detail.name,
+        memo: detail.memo,
+        // imgPath: detail.imgPath,
+      });
+      // 셀 스타일을 개별적으로 설정
+      row.eachCell((cell, colNumber) => {
+        if (colNumber === 16) {
+          // Note 열 (1-based index)
+          cell.alignment = { vertical: 'middle', horizontal: 'left' };
+        } else {
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        }
+      });
+    });
+    const buffer = await workbook.xlsx.writeBuffer();
+    console.log(
+      '🚀 ~ ReceiptService ~ downloadReceiptByExcel ~ buffer:',
+      buffer,
+    );
+    return buffer;
+  }
 
   async getReceiptByYearAndMonth(
     user: UserDTO,
@@ -46,6 +115,7 @@ export class ReceiptService {
       memberCode,
     );
   }
+
   async getReceiptByPeriod(
     user: UserDTO,
     searchValue: string,
@@ -64,42 +134,38 @@ export class ReceiptService {
     );
   }
 
-  async updateReciept(
+  async updateReceipt(
     user: UserDTO,
-    body: UpdateReceiptDTO,
+    body,
     { OCRName, OCRBuffer, OCRMimetype },
   ) {
-    this.logger.verbose(`${ReceiptService.name} - updateReciept`);
+    this.logger.verbose(`${ReceiptService.name} - updateReceipt`);
     const { companyCode } = user;
-    const company = this.companyService
-      .send('getCompanyByCompanyCode', companyCode)
-      .pipe(
-        tap((res) => {
-          console.log('🚀 ~ ReceiptService ~ tap ~ res:', res);
-          return res;
-        }),
-        catchError((e) => {
-          console.error('Error in catchError:', e);
-          return of(null); // Handle error and return a default value or empty observable
-        }),
-      );
-    console.log(
-      '🚀 ~ ReceiptService ~ this.companyService:',
-      this.companyService,
-    );
-    console.log('🚀 ~ ReceiptService ~ company:', company);
 
     let imgPath: string;
-    // if (OCRName) {
-    //   await this.amazonService.uploadFile(
-    //     OCRName,
-    //     OCRBuffer,
-    //     OCRMimetype,
-    //     'ocrImage',
-    //   );
-    //   const encodedFileName = encodeURIComponent(OCRName);
-    //   imgPath = `${process.env.AMAZON_BUCKET_BASE}/ocrImage/${encodedFileName}`;
-    // }
+    if (OCRName) {
+      await this.amazonService.uploadFile(
+        OCRName,
+        OCRBuffer,
+        OCRMimetype,
+        'ocrImage',
+      );
+      const encodedFileName = encodeURIComponent(OCRName);
+      imgPath = `${process.env.AMAZON_BUCKET_BASE}/ocrImage/${encodedFileName}`;
+    } else {
+      const result = await this.receiptRepository.getReceiptDetailById(
+        body._id,
+      );
+      imgPath = result.imgPath;
+    }
+
+    return await this.receiptRepository.updateReceipt({
+      ...body,
+      imgPath,
+      receiptDate: moment(body.receiptDate).format('YYYY-MM-DD'),
+      year: moment(body.receiptDate).format('YYYY'),
+      month: moment(body.receiptDate).format('MM'),
+    });
   }
 
   async createReceipt(
@@ -131,6 +197,9 @@ export class ReceiptService {
         price: Number(uploadReceiptDto.price),
         memberCode,
         imgPath,
+        receiptDate: moment(uploadReceiptDto.receiptDate).format('YYYY-MM-DD'),
+        year: moment(uploadReceiptDto.receiptDate).format('YYYY'),
+        month: moment(uploadReceiptDto.receiptDate).format('MM'),
         companyCode,
       });
       // naver api로 분석하기
@@ -143,55 +212,55 @@ export class ReceiptService {
       await fs.promises.writeFile(filePath, OCRBuffer);
       //  2. 업로드된 파일을 가지고 base64로 변환
       const data = await fs.promises.readFile(filePath);
-      const base64Encoded = data.toString('base64');
+      // const base64Encoded = data.toString('base64');
 
-      const naverOcrDto: NaverOcrDTO = {
-        images: [
-          {
-            format: OCRMimetype.split('/')[1],
-            name: OCRName,
-            data: base64Encoded,
-          },
-        ],
-        requestId: uuidv4(),
-        version: 'V2',
-        timestamp: moment().unix(),
-      };
+      // const naverOcrDto: NaverOcrDTO = {
+      //   images: [
+      //     {
+      //       format: OCRMimetype.split('/')[1],
+      //       name: OCRName,
+      //       data: base64Encoded,
+      //     },
+      //   ],
+      //   requestId: uuidv4(),
+      //   version: 'V2',
+      //   timestamp: moment().unix(),
+      // };
 
-      const result2 = await this.httpService.axiosRef.post(
-        process.env.NAVER_OCR_URL_FOR_RECIPT,
-        naverOcrDto,
-        {
-          headers: {
-            'X-OCR-SECRET': process.env.X_OCR_SECRET_FOR_RECEIPT,
-            'Content-Type': 'application/json',
-          },
-        },
-      );
+      // const result2 = await this.httpService.axiosRef.post(
+      //   process.env.NAVER_OCR_URL_FOR_RECIPT,
+      //   naverOcrDto,
+      //   {
+      //     headers: {
+      //       'X-OCR-SECRET': process.env.X_OCR_SECRET_FOR_RECEIPT,
+      //       'Content-Type': 'application/json',
+      //     },
+      //   },
+      // );
 
-      const money =
-        result2?.data?.images?.[0].receipt?.result?.totalPrice?.price?.formatted
-          ?.value || 0;
-      const year =
-        result2?.data?.images?.[0].receipt?.result?.paymentInfo?.date?.formatted
-          ?.year || '';
-      const month =
-        result2?.data?.images?.[0].receipt?.result?.paymentInfo?.date?.formatted
-          ?.month || '';
-      const day =
-        result2?.data?.images?.[0].receipt?.result?.paymentInfo?.date?.formatted
-          ?.day || '';
-      return {
-        totalPrice: money,
-        date: `${year}-${month}-${day}`,
-      };
+      // const money =
+      //   result2?.data?.images?.[0].receipt?.result?.totalPrice?.price?.formatted
+      //     ?.value || 0;
+      // const year =
+      //   result2?.data?.images?.[0].receipt?.result?.paymentInfo?.date?.formatted
+      //     ?.year || '';
+      // const month =
+      //   result2?.data?.images?.[0].receipt?.result?.paymentInfo?.date?.formatted
+      //     ?.month || '';
+      // const day =
+      //   result2?.data?.images?.[0].receipt?.result?.paymentInfo?.date?.formatted
+      //     ?.day || '';
+      // return {
+      //   totalPrice: money,
+      //   date: `${year}-${month}-${day}`,
+      // };
     } catch (e) {
       this.logger.error(e);
     }
   }
 
-  async deleteReciept(body: DeleteReceiptDTO) {
-    this.logger.verbose(`${ReceiptService.name} - deleteReciept`);
-    return await this.receiptRepository.deleteReciept(body);
+  async deleteReceipt(body: DeleteReceiptDTO) {
+    this.logger.verbose(`${ReceiptService.name} - deleteReceipt`);
+    return await this.receiptRepository.deleteReceipt(body);
   }
 }

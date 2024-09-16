@@ -5,6 +5,8 @@ import {
   Get,
   HttpException,
   Logger,
+  NotFoundException,
+  Param,
   Post,
   Put,
   Query,
@@ -20,6 +22,7 @@ import { UploadReceiptDTO } from './dto/upload-receipt.dto';
 import { UpdateReceiptDTO } from './dto/update-receipt.dto';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
+import { DownloadReceiptDTO } from './dto/download-receipt.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('receipt')
@@ -92,45 +95,66 @@ export class ReceiptController {
   ) {
     this.logger.verbose(`${ReceiptController.name} - createReceipt`);
     this.logger.log(`uploadReceiptDto - ${JSON.stringify(body)}`);
-    const parsedData = JSON.parse(body.receiptBody);
 
-    const dto = plainToInstance(UploadReceiptDTO, parsedData);
-    const te = {
-      receiptDate: '2024-01-01',
-      name: 'name',
-      numberOfPeople: 2,
-      receiptType: 'DINNER_FEE',
-      price: 100,
-      memo: '2명',
-    };
+    const dto = plainToInstance(UploadReceiptDTO, body);
+
     const errors = await validate(dto);
-    return await this.fileUploadService.createReceipt(user, parsedData, {
+    console.log('🚀 ~ ReceiptController ~ errors:', errors);
+    if (errors.length > 0) {
+      return new NotFoundException(errors);
+    }
+    return await this.fileUploadService.createReceipt(user, body, {
       OCRName: originalname || '',
       OCRBuffer: buffer || Buffer.from(''),
       OCRMimetype: mimetype || '',
     });
   }
 
+  @Post('download/excel')
+  async downloadReceiptByExcel(
+    @CurrentUser() user: UserDTO,
+    @Body() body: DownloadReceiptDTO,
+  ) {
+    this.logger.verbose(`${ReceiptController.name} - downloadReceiptByExcel`);
+    this.logger.log(`downloadReceiptByExcelDto - ${JSON.stringify(body)}`);
+
+    return await this.fileUploadService.downloadReceiptByExcel(user, body);
+  }
+
   @Delete()
-  async deleteReciept(@Body() body: DeleteReceiptDTO) {
-    this.logger.verbose(`${ReceiptController.name} - deleteReciept`);
+  async deleteReceipt(@Body() body: DeleteReceiptDTO) {
+    this.logger.verbose(`${ReceiptController.name} - deleteReceipt`);
     this.logger.log(`deleteRecieptDTO - ${JSON.stringify(body)}`);
-    return await this.fileUploadService.deleteReciept(body);
+    return await this.fileUploadService.deleteReceipt(body);
   }
 
   @Put()
   @UseInterceptors(FileInterceptor('file'))
-  async updateReciept(
+  async updateReceipt(
     @CurrentUser() user: UserDTO,
-    @Body() body: UpdateReceiptDTO,
-    @UploadedFile() { originalname, buffer, mimetype }: Express.Multer.File,
+    @Body() body,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
-    this.logger.verbose(`${ReceiptController.name} - updateReciept`);
+    this.logger.verbose(`${ReceiptController.name} - updateReceipt`);
     this.logger.log(`UpdateReceiptDTO - ${JSON.stringify(body)}`);
-    return await this.fileUploadService.updateReciept(user, body, {
-      OCRName: originalname || '',
-      OCRBuffer: buffer || Buffer.from(''),
-      OCRMimetype: mimetype || '',
+    return await this.fileUploadService.updateReceipt(user, body, {
+      OCRName: file?.originalname || '',
+      OCRBuffer: file?.buffer || Buffer.from(''),
+      OCRMimetype: file?.mimetype || '',
     });
+  }
+
+  @Get('detail/:_id')
+  async getReceiptDetailById(
+    @Param('_id')
+    _id: string,
+  ) {
+    this.logger.verbose(`${ReceiptController.name} - getReceiptDetailById`);
+    try {
+      return await this.fileUploadService.getReceiptDetailById(_id);
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(error, 400);
+    }
   }
 }

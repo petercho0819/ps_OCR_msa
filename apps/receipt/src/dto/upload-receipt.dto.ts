@@ -48,4 +48,12 @@ export class UploadReceiptSVCDTO extends UploadReceiptDTO {
   @IsNotEmpty()
   @IsString()
   imgPath: string;
+
+  @IsNotEmpty()
+  @IsString()
+  year: string;
+
+  @IsNotEmpty()
+  @IsString()
+  month: string;
 }

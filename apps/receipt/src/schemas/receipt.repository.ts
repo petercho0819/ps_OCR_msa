@@ -16,6 +16,40 @@ export class ReceiptRepository extends AbstractRepository<ReceiptDocument> {
     super(uploadModel);
   }
 
+  async updateReceipt(body) {
+    this.logger.verbose(`${ReceiptRepository.name} - updateReceipt`);
+    return await this.uploadModel.updateOne(
+      {
+        _id: body._id,
+      },
+      { ...body },
+    );
+  }
+
+  async getReceiptDetailById(_id: string) {
+    this.logger.verbose(`${ReceiptRepository.name} - getReceiptDetailById`);
+    return await this.uploadModel.findOne({
+      _id,
+    });
+  }
+
+  async getReceiptByYearAndMonthByExcel(
+    year: string,
+    month: string,
+    companyCode: string,
+    memberCode: string,
+  ) {
+    this.logger.verbose(
+      `${ReceiptRepository.name} - getReceiptByYearAndMonthByExcel`,
+    );
+    return await this.uploadModel.find({
+      year,
+      month,
+      companyCode,
+      memberCode,
+    });
+  }
+
   async getReceiptByYearAndMonth(
     searchValue: string,
     page: number,
@@ -70,12 +104,12 @@ export class ReceiptRepository extends AbstractRepository<ReceiptDocument> {
     });
   }
 
-  async deleteReciept(body: DeleteReceiptDTO) {
-    this.logger.verbose(`${ReceiptRepository.name} - deleteReciept`);
+  async deleteReceipt(body: DeleteReceiptDTO) {
+    this.logger.verbose(`${ReceiptRepository.name} - deleteReceipt`);
     this.logger.log(`deleteReciept: ${JSON.stringify(body)} `);
 
     return await this.uploadModel.deleteMany({
-      _id: { $in: body },
+      _id: { $in: body.ids },
     });
   }
 }
