@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  auth:
+    build:
+      context: .
+      dockerfile: apps/auth/Dockerfile
+      target: production
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - ./apps/auth/.env.prod
+    ports:
+      - "4001:4001"
+
+  company:
+    build:
+      context: .
+      dockerfile: apps/company/Dockerfile
+      target: production
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - ./apps/company/.env.prod
+    ports:
+      - "4002:4002"
+
+  receipt:
+    build:
+      context: .
+      dockerfile: apps/receipt/Dockerfile
+      target: production
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - ./apps/receipt/.env.prod
+    ports:
+      - "4003:4003"
+
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
