@@ -15,6 +15,18 @@ pipeline {
             }
         }
         
+        stage('Setup Environment') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'prod-env-file', variable: 'ENV_FILE')]) {
+                        sh 'cp $ENV_FILE apps/auth/.env.prod'
+                        sh 'cp $ENV_FILE apps/company/.env.prod'
+                        sh 'cp $ENV_FILE apps/receipt/.env.prod'
+                    }
+                }
+            }
+        }
+        
         stage('Install Dependencies') {
             steps {
                 script {
