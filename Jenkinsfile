@@ -14,22 +14,21 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/petercho0819/ps_OCR_msa.git'
             }
         }
-        stage('Setup Environment') {
-            steps {
-                script {
-                    withCredentials([
-                        file(credentialsId: 'auth-prod-env-file', variable: 'AUTH_ENV_FILE'),
-                        file(credentialsId: 'company-prod-env-file', variable: 'COMPANY_ENV_FILE'),
-                        file(credentialsId: 'receipt-prod-env-file', variable: 'RECEIPT_ENV_FILE')
-                    ]) {
-                        sh 'cp $AUTH_ENV_FILE apps/auth/.env.prod'
-                        sh 'cp $COMPANY_ENV_FILE apps/company/.env.prod'
-                        sh 'cp $RECEIPT_ENV_FILE apps/receipt/.env.prod'
-                    }
-                }
-            }
-        }
-        
+        // stage('Setup Environment') {
+        //     steps {
+        //         script {
+        //             withCredentials([
+        //                 file(credentialsId: 'auth-prod-env-file', variable: 'AUTH_ENV_FILE'),
+        //                 file(credentialsId: 'company-prod-env-file', variable: 'COMPANY_ENV_FILE'),
+        //                 file(credentialsId: 'receipt-prod-env-file', variable: 'RECEIPT_ENV_FILE')
+        //             ]) {
+        //                 sh 'cp $AUTH_ENV_FILE apps/auth/.env.prod'
+        //                 sh 'cp $COMPANY_ENV_FILE apps/company/.env.prod'
+        //                 sh 'cp $RECEIPT_ENV_FILE apps/receipt/.env.prod'
+        //             }
+        //         }
+        //     }
+        // }
         stage('Install Dependencies') {
             steps {
                 script {
