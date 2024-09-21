@@ -29,16 +29,16 @@ pipeline {
         //         }
         //     }
         // }
-        stage('Install Dependencies') {
-            steps {
-                script {
-                    // 의존성 설치 (선택사항, 빌드 단계에서 사용)
-                    sh 'npm install --prefix apps/auth'
-                    sh 'npm install --prefix apps/company'
-                    sh 'npm install --prefix apps/receipt'
-                }
-            }
-        }
+        // stage('Install Dependencies') {
+        //     steps {
+        //         script {
+        //             // 의존성 설치 (선택사항, 빌드 단계에서 사용)
+        //             sh 'npm install --prefix apps/auth'
+        //             sh 'npm install --prefix apps/company'
+        //             sh 'npm install --prefix apps/receipt'
+        //         }
+        //     }
+        // }
 
         stage('Build Services') {
             steps {
