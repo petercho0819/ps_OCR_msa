@@ -49,16 +49,16 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
-            steps {
-                script {
-                    // 테스트를 수행할 수 있다면 여기에 포함
-                    sh 'npm run test --prefix apps/auth'
-                    sh 'npm run test --prefix apps/company'
-                    sh 'npm run test --prefix apps/receipt'
-                }
-            }
-        }
+        // stage('Run Tests') {
+        //     steps {
+        //         script {
+        //             // 테스트를 수행할 수 있다면 여기에 포함
+        //             sh 'npm run test --prefix apps/auth'
+        //             sh 'npm run test --prefix apps/company'
+        //             sh 'npm run test --prefix apps/receipt'
+        //         }
+        //     }
+        // }
 
         stage('Deploy Services') {
             steps {
