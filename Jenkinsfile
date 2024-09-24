@@ -70,18 +70,18 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            // 빌드 후 Docker Compose 상태를 출력
-            sh 'docker-compose ps'
-        }
-        success {
-            // 빌드 성공 시 알림 등 추가 작업
-            echo 'Build and Deploy Successful'
-        }
-        failure {
-            // 빌드 실패 시 처리
-            echo 'Build or Deploy Failed'
-        }
-    }
+    // post {
+    //     always {
+    //         // 빌드 후 Docker Compose 상태를 출력
+    //         sh 'docker-compose ps'
+    //     }
+    //     success {
+    //         // 빌드 성공 시 알림 등 추가 작업
+    //         echo 'Build and Deploy Successful'
+    //     }
+    //     failure {
+    //         // 빌드 실패 시 처리
+    //         echo 'Build or Deploy Failed'
+    //     }
+    // }
 }
