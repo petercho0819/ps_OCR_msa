@@ -21,7 +21,7 @@ async function bootstrap() {
     optionsSuccessStatus: 200,
   });
   console.log(
-    "🚀 ~ bootstrap ~ configService.get('PORT'):",
+    "🚀 ~ bootstrap ~ configService.get('PORT'):, receipt",
     configService.get('PORT'),
   );
   await app.listen(configService.get('PORT'));

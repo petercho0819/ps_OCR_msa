@@ -20,6 +20,10 @@ import { HttpModule } from '@nestjs/axios';
       validationSchema: Joi.object({
         MONGODB_URI: Joi.string().required(),
         PORT: Joi.number().required(),
+        AUTH_RMQ_URL: Joi.string().required(),
+        AUTH_QUEUE: Joi.string().required(),
+        COMPANY_RMQ_URL: Joi.string().required(),
+        COMPANY_QUEUE: Joi.string().required(),
       }),
     }),
     AmazonModule.init({
@@ -33,32 +37,38 @@ import { HttpModule } from '@nestjs/axios';
     ClientsModule.registerAsync([
       {
         name: AUTH_SERVICE,
-        useFactory: (configService: ConfigService) => {
-          const host = configService.get('AUTH_HOST');
-          const port = configService.get('AUTH_PORT');
-          return {
-            transport: Transport.TCP,
-            options: {
-              host,
-              port,
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('AUTH_RMQ_URL')],
+            queue: configService.get<string>('AUTH_QUEUE'),
+            queueOptions: {
+              durable: true,
             },
-          };
-        },
+            heartbeat: 60,
+            prefetchCount: 1,
+            noAck: false,
+            persistent: true,
+          },
+        }),
         inject: [ConfigService],
       },
       {
         name: COMPANY_SERVICE,
-        useFactory: (configService: ConfigService) => {
-          const host = configService.get('COMPANY_HOST');
-          const port = configService.get('COMPANY_PORT');
-          return {
-            transport: Transport.TCP,
-            options: {
-              host,
-              port,
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('COMPANY_RMQ_URL')],
+            queue: configService.get<string>('COMPANY_QUEUE'),
+            queueOptions: {
+              durable: true,
             },
-          };
-        },
+            heartbeat: 60,
+            prefetchCount: 1,
+            noAck: false,
+            persistent: true,
+          },
+        }),
         inject: [ConfigService],
       },
     ]),

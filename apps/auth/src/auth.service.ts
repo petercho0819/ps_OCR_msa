@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { MemberRepository } from './users/user.repository';
 import Tokenpayload from './interface/token-payload.interface';
+import { userInfo } from 'os';
 
 @Injectable()
 export class AuthService {
@@ -37,6 +38,9 @@ export class AuthService {
       // httpOnly: true,
     });
 
-    return token; // Return the token
+    return {
+      token,
+      memberData,
+    }; // Return the token
   }
 }

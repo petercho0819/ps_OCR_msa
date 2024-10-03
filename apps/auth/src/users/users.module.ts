@@ -17,13 +17,18 @@ import { ConfigService } from '@nestjs/config';
       {
         name: COMPANY_SERVICE,
         useFactory: (configService: ConfigService) => {
-          const host = configService.get('COMPANY_HOST');
-          const port = configService.get('COMPANY_PORT');
+          const host = configService.get('RABBIT_COMPANY_URL');
+          const queueName = configService.get('COMPANY_QUEUE');
+
           return {
-            transport: Transport.TCP,
+            transport: Transport.RMQ,
             options: {
-              host,
-              port,
+              urls: [host],
+              queue: queueName,
+              queueOptions: {
+                durable: true,
+              },
+              heartbeat: 30,
             },
           };
         },

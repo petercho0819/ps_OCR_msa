@@ -7,6 +7,8 @@ import {
 } from '@aws-sdk/client-s3';
 import { ConfigProps } from './amazon.module';
 import { AMAZON_AWS_CONFIG } from '../constant';
+import { Readable } from 'stream';
+import { Upload } from '@aws-sdk/lib-storage';
 
 @Injectable()
 export class AmazonService {
@@ -24,22 +26,33 @@ export class AmazonService {
   }
 
   async uploadFile(
-    fileName: string,
+    key: string,
     file: Buffer,
-    type: Express.Multer.File['mimetype'],
-    key: 'pdf' | 'ocrImage',
+    mimetype: string,
+    folder: 'pdf' | 'ocrImage',
   ) {
     this.logger.verbose(`${AmazonService.name} : uploadFile`);
 
-    const object_upload_params = new PutObjectCommand({
-      Bucket: this.bucket,
-      ContentType: type,
-      ACL: 'public-read', // 파일을 퍼블릭으로 설정
-      Key: `${key}/${fileName}`,
-      Body: file,
+    const stream = Readable.from(file);
+
+    const upload = new Upload({
+      client: this.client,
+      params: {
+        Bucket: this.bucket,
+        Key: folder + '/' + key,
+        Body: stream,
+        ContentType: mimetype,
+        ACL: 'public-read',
+      },
     });
 
-    return await this.client.send(object_upload_params);
+    try {
+      const result = await upload.done();
+      return result;
+    } catch (error) {
+      this.logger.error(`Error uploading file: ${error.message}`, error.stack);
+      throw error;
+    }
   }
 
   setBucket(bucketName: string) {

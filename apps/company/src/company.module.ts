@@ -24,6 +24,8 @@ import { CompanyRepository } from './schemas/company.repository';
         MONGODB_URI: Joi.string().required(),
         DB_NAME: Joi.string().required(),
         PORT: Joi.number().required(),
+        COMPANY_QUEUE: Joi.string().required(),
+        RABBITMQ_URL: Joi.string().required(),
         // STRIPE_SECRET_KEY: Joi.string().required(), //we will set up this on step 4
       }),
     }),

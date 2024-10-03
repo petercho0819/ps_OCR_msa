@@ -16,6 +16,7 @@ import { catchError, of, tap } from 'rxjs';
 import { DownloadReceiptDTO } from './dto/download-receipt.dto';
 import * as ExcelJS from 'exceljs';
 import { DINNER_FEE, TAXI_FEE } from './constant';
+import { getGenerateCode } from 'apps/auth/src/function';
 
 @Injectable()
 export class ReceiptService {
@@ -45,25 +46,8 @@ export class ReceiptService {
         companyCode,
         memberCode,
       );
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet(`${year} - ${month}`);
-    const columns = [
-      { header: '일자', key: 'receiptDate', width: 20 },
-      { header: '항목', key: 'receiptType', width: 20 },
-      { header: '가격', key: 'price', width: 10 },
-      { header: '이름', key: 'name', width: 30 },
-      { header: '식대 인원', key: 'numberOfPeople', width: 10 },
-      { header: '메모', key: 'memo', width: 20 },
-      // { header: '영수증', key: 'imgPath', width: 20 },
-    ];
-    worksheet.columns = columns;
-    const headerRow = worksheet.getRow(1);
-
-    headerRow.eachCell((cell, colNumber) => {
-      cell.alignment = { vertical: 'middle', horizontal: 'center' };
-    });
-    receipt.forEach((detail) => {
-      const row = worksheet.addRow({
+    return receipt.map((detail) => {
+      return {
         receiptDate: detail.receiptDate,
         receiptType:
           detail.receiptType === DINNER_FEE
@@ -75,24 +59,9 @@ export class ReceiptService {
         numberOfPeople: detail.numberOfPeople,
         name: detail.name,
         memo: detail.memo,
-        // imgPath: detail.imgPath,
-      });
-      // 셀 스타일을 개별적으로 설정
-      row.eachCell((cell, colNumber) => {
-        if (colNumber === 16) {
-          // Note 열 (1-based index)
-          cell.alignment = { vertical: 'middle', horizontal: 'left' };
-        } else {
-          cell.alignment = { vertical: 'middle', horizontal: 'center' };
-        }
-      });
+        imgPath: detail.imgPath,
+      };
     });
-    const buffer = await workbook.xlsx.writeBuffer();
-    console.log(
-      '🚀 ~ ReceiptService ~ downloadReceiptByExcel ~ buffer:',
-      buffer,
-    );
-    return buffer;
   }
 
   async getReceiptByYearAndMonth(
@@ -180,15 +149,22 @@ export class ReceiptService {
     // 1. aws에 업로드
     try {
       let imgPath: string;
-      if (OCRName) {
-        await this.amazonService.uploadFile(
-          OCRName,
+      if (OCRName && OCRBuffer) {
+        const key = `receipt_${moment().format(
+          'YYYY-MM-DD HH:mm:ss:SSS',
+        )}_${getGenerateCode()}`;
+        const uploadResult = await this.amazonService.uploadFile(
+          key,
           OCRBuffer,
           OCRMimetype,
           'ocrImage',
         );
-        const encodedFileName = encodeURIComponent(OCRName);
-        imgPath = `${process.env.AMAZON_BUCKET_BASE}/ocrImage/${encodedFileName}`;
+
+        if (uploadResult.Location) {
+          imgPath = uploadResult.Location;
+        } else {
+          throw new Error('Failed to get upload location from S3');
+        }
       }
       // 2. db에 저장
       await this.receiptRepository.createReceipt({

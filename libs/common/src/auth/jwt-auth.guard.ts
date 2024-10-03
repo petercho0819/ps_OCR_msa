@@ -4,43 +4,54 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
-import { Observable, of } from 'rxjs';
-import { ClientProxy } from '@nestjs/microservices';
+import { Observable, lastValueFrom } from 'rxjs';
+import {
+  ClientProxy,
+  ClientProxyFactory,
+  Transport,
+} from '@nestjs/microservices';
 import { catchError, map, tap } from 'rxjs/operators';
 
 import { AUTH_SERVICE } from '../constant';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
-  constructor(@Inject(AUTH_SERVICE) private readonly authClient: ClientProxy) {}
+  private authClient: ClientProxy;
 
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  constructor() {
+    this.authClient = ClientProxyFactory.create({
+      transport: Transport.RMQ,
+      options: {
+        urls: ['amqp://rabbitmq:5672'], // Docker 네트워크에서의 RabbitMQ 서비스 이름
+        queue: 'auth_queue', // 인증 서비스 큐 이름
+        queueOptions: {
+          durable: true,
+        },
+      },
+    });
+  }
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
     const jwt =
-      context.switchToHttp().getRequest().cookies?.Authentication ||
-      context.switchToHttp().getRequest()?.Authentication ||
-      context.switchToHttp().getRequest().headers?.Authentication ||
-      context.switchToHttp().getRequest().headers?.authentication ||
-      console.log(
-        '🚀 ~ JwtAuthGuard ~ jwt:',
-        context.switchToHttp().getRequest().headers,
-      );
+      request?.cookies?.Authentication ||
+      request?.Authentication ||
+      request?.headers?.Authentication ||
+      request?.headers?.authentication;
+
     if (!jwt) {
       return false;
     }
 
-    // this.authClient.connect();
-    return this.authClient
-      .send('authenticate', {
-        Authentication: jwt,
-      })
-      .pipe(
-        tap((res) => {
-          context.switchToHttp().getRequest().user = res;
-        }),
-        map(() => true),
-        catchError(() => of(false)),
+    try {
+      const result = await lastValueFrom(
+        this.authClient.send('authenticate', { Authentication: jwt }),
       );
+      request.user = result;
+      return true;
+    } catch (error) {
+      console.error('Authentication failed:', error);
+      return false;
+    }
   }
 }
