@@ -12,6 +12,9 @@ services:
       - ./apps/auth/.env.prod
     ports:
       - "4001:4001"
+    depends_on:
+      - rabbitmq
+      - mongo
 
   company:
     build:
@@ -24,6 +27,9 @@ services:
       - ./apps/company/.env.prod
     ports:
       - "4002:4002"
+    depends_on:
+      - rabbitmq
+      - mongo
 
   receipt:
     build:
@@ -36,8 +42,29 @@ services:
       - ./apps/receipt/.env.prod
     ports:
       - "4003:4003"
+    depends_on:
+      - rabbitmq
+      - mongo
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - '5672:5672'  # AMQP protocol port
+      - '15672:15672'  # Management UI
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - app-network
 
   mongo:
     image: mongo
     ports:
       - "27017:27017"
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+  rabbitmq-data:
