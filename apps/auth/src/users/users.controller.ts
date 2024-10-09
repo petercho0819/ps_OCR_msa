@@ -16,6 +16,7 @@ import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { UserDocument } from './models/user.schema';
 import { CreateMasterDTO } from './dto/create-master.dto';
 import { UserDTO } from '@app/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 
 @Controller('users')
 export class UsersController {
@@ -79,5 +80,12 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   getCurrentUser(@CurrentUser() user: UserDocument) {
     return user;
+  }
+
+  @MessagePattern('get_user_by_user_code')
+  async getUserByUserCodes(@Payload() data) {
+    this.logger.verbose(`${UsersController.name} - getUserByUserCodes`);
+
+    return this.userService.getUserByUserCodes(data);
   }
 }

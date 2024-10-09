@@ -38,7 +38,6 @@ export class JwtAuthGuard implements CanActivate {
       request?.Authentication ||
       request?.headers?.Authentication ||
       request?.headers?.authentication;
-
     if (!jwt) {
       return false;
     }

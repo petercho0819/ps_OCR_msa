@@ -7,12 +7,12 @@ import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { NaverOcrDTO } from './interface';
 import { ReceiptRepository } from './schemas/receipt.repository';
-import { COMPANY_SERVICE, UserDTO } from '@app/common';
+import { AUTH_SERVICE, COMPANY_SERVICE, UserDTO } from '@app/common';
 import { DeleteReceiptDTO } from './dto/delete-receipt.dto';
 import { UploadReceiptDTO } from './dto/upload-receipt.dto';
 import { UpdateReceiptDTO } from './dto/update-receipt.dto';
 import { ClientProxy } from '@nestjs/microservices';
-import { catchError, of, tap } from 'rxjs';
+import { catchError, forkJoin, map, of, tap } from 'rxjs';
 import { DownloadReceiptDTO } from './dto/download-receipt.dto';
 import * as ExcelJS from 'exceljs';
 import { DINNER_FEE, TAXI_FEE } from './constant';
@@ -21,6 +21,7 @@ import { getGenerateCode } from 'apps/auth/src/function';
 @Injectable()
 export class ReceiptService {
   @Inject(COMPANY_SERVICE) private readonly companyService: ClientProxy;
+  @Inject(AUTH_SERVICE) private readonly userService: ClientProxy;
 
   private readonly logger = new Logger(ReceiptService.name);
 
@@ -30,13 +31,108 @@ export class ReceiptService {
     private readonly amazonService: AmazonService,
   ) {}
 
+  async getReceiptByYearAndMonthByAdmin(
+    user: UserDTO,
+    searchValue: string,
+    page: number,
+    limit: number,
+    year: string,
+    month: string,
+  ) {
+    this.logger.verbose(
+      `${ReceiptService.name} - getReceiptByYearAndMonthByAdmin`,
+    );
+    const { companyCode } = user;
+    const receipt =
+      await this.receiptRepository.getReceiptByYearAndMonthByAdmin(
+        searchValue,
+        page,
+        limit,
+        year,
+        month,
+        companyCode,
+      );
+
+    const userCodes = [...new Set(receipt.map((v) => v.memberCode))];
+
+    const result = await forkJoin({
+      receipts: Promise.resolve(receipt),
+      users: this.userService.send('get_user_by_user_code', userCodes).pipe(
+        tap((res) => {
+          this.logger.debug(`Fetched user data: ${JSON.stringify(res)}`);
+        }),
+        map((users) => {
+          const userMap = new Map(users.map((user) => [user.memberCode, user]));
+          return userMap;
+        }),
+      ),
+    })
+      .pipe(
+        map(({ receipts, users }) => {
+          return receipts.map((receipt) => {
+            const user: any = users.get(receipt.memberCode);
+            return {
+              ...receipt,
+              userName: user ? user.name : '',
+              userEmail: user ? user.email : '',
+              companyName: user ? user.companyName : '',
+            };
+          });
+        }),
+      )
+      .toPromise();
+
+    const resultMap = new Map();
+
+    result.forEach((item) => {
+      const {
+        memberCode,
+        userName,
+        isApprove,
+        userEmail,
+        name,
+        price,
+        receiptDate,
+        receiptType,
+        numberOfPeople,
+        memo,
+        imgPath,
+      } = item;
+
+      if (!resultMap.has(memberCode)) {
+        // 새로운 memberCode에 대한 엔트리 생성
+        resultMap.set(memberCode, {
+          memberCode,
+          userName,
+          userEmail,
+          isApprove,
+          excelData: [],
+        });
+      }
+
+      // excelData 배열에 새로운 항목 추가
+      resultMap.get(memberCode).excelData.push({
+        name,
+        price,
+        receiptDate,
+        receiptType,
+        numberOfPeople,
+        memo,
+        imgPath,
+      });
+    });
+
+    // Map을 배열로 변환하여 최종 결과 생성
+    return Array.from(resultMap.values());
+  }
+
   async getReceiptDetailById(_id: string) {
     this.logger.verbose(`${ReceiptService.name} - getReceiptDetailById`);
     return await this.receiptRepository.getReceiptDetailById(_id);
   }
 
   async downloadReceiptByExcel(user: UserDTO, body: DownloadReceiptDTO) {
-    this.logger.verbose(`${ReceiptService.name} - getReceiptByYearAndMonth`);
+    this.logger.verbose(`${ReceiptService.name} - downloadReceiptByExcel`);
     const { companyCode, memberCode } = user;
     const { year, month } = body;
     const receipt =

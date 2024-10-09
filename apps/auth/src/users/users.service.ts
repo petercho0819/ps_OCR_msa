@@ -23,6 +23,11 @@ export class UsersService {
 
   constructor(private readonly memberRepository: MemberRepository) {}
 
+  async getUserByUserCodes(memberCodes: string[]) {
+    this.logger.verbose(`${UsersService.name} - getUserByUserCodes`);
+    return this.memberRepository.find({ memberCode: { $in: memberCodes } });
+  }
+
   async createMaster(createUserDto: CreateMasterDTO) {
     this.logger.verbose(`${UsersService.name} - createMaster`);
     await this.validateCreateUserDto(createUserDto);

@@ -36,6 +36,9 @@ export class Receipt extends AbstractDocument {
   @Prop()
   numberOfPeople: number;
 
+  @Prop({ default: false })
+  isApprove: boolean;
+
   createdAt: Date;
 
   updatedAt: Date;

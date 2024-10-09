@@ -16,6 +16,37 @@ export class ReceiptRepository extends AbstractRepository<ReceiptDocument> {
     super(uploadModel);
   }
 
+  async getReceiptByYearAndMonthByAdmin(
+    searchValue: string,
+    page: number,
+    limit: number,
+    year: string,
+    month: string,
+    companyCode: string,
+  ) {
+    return await this.uploadModel
+      .find({
+        $or: [
+          {
+            name: {
+              $regex: new RegExp(searchValue, 'i'),
+            },
+          },
+          {
+            memo: {
+              $regex: new RegExp(searchValue, 'i'),
+            },
+          },
+        ],
+        year,
+        month,
+        companyCode,
+      })
+      .skip((page - 1) * limit)
+      .limit(limit * 1)
+      .lean();
+  }
+
   async updateReceipt(body) {
     this.logger.verbose(`${ReceiptRepository.name} - updateReceipt`);
     return await this.uploadModel.updateOne(
