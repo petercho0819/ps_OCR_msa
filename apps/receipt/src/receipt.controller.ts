@@ -58,6 +58,36 @@ export class ReceiptController {
     }
   }
 
+  @Get('admin/list/yearAndMonth')
+  async getReceiptByYearAndMonthByAdmin(
+    @CurrentUser() user: UserDTO,
+    @Query('searchValue') searchValue: string,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('year') year: string,
+    @Query('month')
+    month: string,
+  ) {
+    this.logger.verbose(
+      `${ReceiptController.name} - getReceiptByYearAndMonthByAdmin`,
+    );
+    try {
+      page = Math.max(1, page);
+      limit = Math.max(1, limit);
+      return await this.fileUploadService.getReceiptByYearAndMonthByAdmin(
+        user,
+        searchValue,
+        page,
+        limit,
+        year,
+        month,
+      );
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(error, 400);
+    }
+  }
+
   @Get('list/yearAndMonth')
   async getReceiptByYearAndMonth(
     @CurrentUser() user: UserDTO,

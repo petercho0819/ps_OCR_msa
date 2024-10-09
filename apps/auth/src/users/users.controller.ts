@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   Logger,
@@ -16,6 +17,7 @@ import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { UserDocument } from './models/user.schema';
 import { CreateMasterDTO } from './dto/create-master.dto';
 import { UserDTO } from '@app/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 
 @Controller('users')
 export class UsersController {
@@ -60,6 +62,18 @@ export class UsersController {
     }
   }
 
+  @Get('admin/list')
+  @UseGuards(JwtAuthGuard)
+  async getMemberByAdmin(@CurrentUser() user: UserDTO) {
+    this.logger.verbose(`${UsersController.name} - getMemberByAdmin`);
+    try {
+      return await this.userService.getMemberByAdmin(user);
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(error, 404);
+    }
+  }
+
   @Get(':email')
   @UseGuards(JwtAuthGuard)
   async getMemberDetail(
@@ -75,9 +89,29 @@ export class UsersController {
     }
   }
 
+  @Delete()
+  @UseGuards(JwtAuthGuard)
+  async deleteMember(@CurrentUser() user: UserDocument, @Body() body) {
+    this.logger.verbose(`${UsersController.name} - deleteMember`);
+    const { emails } = body;
+    try {
+      return await this.userService.deleteMember(user, emails);
+    } catch (error) {
+      this.logger.error(error);
+      return new HttpException(error, 404);
+    }
+  }
+
   @Get()
   @UseGuards(JwtAuthGuard)
   getCurrentUser(@CurrentUser() user: UserDocument) {
     return user;
+  }
+
+  @MessagePattern('get_user_by_user_code')
+  async getUserByUserCodes(@Payload() data) {
+    this.logger.verbose(`${UsersController.name} - getUserByUserCodes`);
+
+    return this.userService.getUserByUserCodes(data);
   }
 }

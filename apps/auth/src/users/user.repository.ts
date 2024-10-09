@@ -14,6 +14,22 @@ export class MemberRepository extends AbstractRepository<UserDocument> {
     super(userModel);
   }
 
+  async deleteMember(companyCode: string, email: any) {
+    this.logger.verbose(`${MemberRepository.name} - deleteMember`);
+
+    return await this.userModel
+      .deleteMany({ companyCode, email: { $in: email } })
+      .exec();
+  }
+
+  async getMemberByAdmin(companyCode: string) {
+    this.logger.verbose(`${MemberRepository.name} - getMember`);
+
+    const query: any = { companyCode };
+
+    return await this.userModel.find(query).exec();
+  }
+
   async findByEmail(email: string) {
     this.logger.verbose(`${MemberRepository.name} - getMember`);
     const result = await this.userModel.findOne(
@@ -30,7 +46,7 @@ export class MemberRepository extends AbstractRepository<UserDocument> {
 
     const query: { email: string } = { email };
 
-    const member = await this.userModel.findOne(query);
+    const member = await this.userModel.findOne(query, { password: 0 });
     return member;
   }
 

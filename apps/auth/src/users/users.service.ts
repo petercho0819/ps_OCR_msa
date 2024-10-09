@@ -16,12 +16,66 @@ import { ADMIN, MEMBER } from '../constant';
 import { getGenerateCode } from '../function';
 import { ClientProxy } from '@nestjs/microservices';
 import { catchError, map, of, switchMap, tap } from 'rxjs';
+import * as moment from 'moment';
+import { UserDocument } from './models/user.schema';
 @Injectable()
 export class UsersService {
   @Inject(COMPANY_SERVICE) private readonly company_service: ClientProxy;
   private readonly logger = new Logger(UsersService.name);
 
   constructor(private readonly memberRepository: MemberRepository) {}
+
+  async deleteMember(user: UserDocument, email: any) {
+    console.log('🚀 ~ UsersService ~ deleteMember ~ email:', email);
+    this.logger.verbose(`${UsersService.name} - deleteMember`);
+    const { companyCode } = user;
+    return await this.memberRepository.deleteMember(companyCode, email);
+  }
+
+  async getMemberByAdmin(user: UserDTO) {
+    this.logger.verbose(`${UsersService.name} - getMemberByAdmin`);
+    const { companyCode } = user;
+    const users = await this.memberRepository.getMemberByAdmin(companyCode);
+
+    const companyCodeList = users.map((v) => v.companyCode);
+
+    const company = this.company_service
+      .send('get_company', companyCodeList)
+      .pipe(
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        tap((res) => {}),
+        catchError((e) => {
+          console.error('Error in catchError:', e);
+          return of(null); // Handle error and return a default value or empty observable
+        }),
+        switchMap((companyData) => {
+          // Join user data with company data
+          const joinedData = users.map((user) => {
+            const company = companyData.find(
+              (company) => company.companyCode === user.companyCode,
+            );
+            return {
+              // _id: user._id,
+              email: user.email,
+              name: user.name,
+              role: user.role,
+              memberCode: user.memberCode,
+              // companyCode: user.companyCode,
+              createdAt: user.createdAt,
+              // companyName: company ? company.companyName : '', // Set companyName or empty string
+            };
+          });
+          this.logger.debug(`Joined data: ${JSON.stringify(joinedData)}`);
+          return of(joinedData);
+        }),
+      );
+    return company;
+  }
+
+  async getUserByUserCodes(memberCodes: string[]) {
+    this.logger.verbose(`${UsersService.name} - getUserByUserCodes`);
+    return this.memberRepository.find({ memberCode: { $in: memberCodes } });
+  }
 
   async createMaster(createUserDto: CreateMasterDTO) {
     this.logger.verbose(`${UsersService.name} - createMaster`);
@@ -31,6 +85,8 @@ export class UsersService {
       password: await bcryptjs.hash(createUserDto.password, 10),
       memberCode: getGenerateCode(),
       role: ADMIN,
+      createdAt: moment().format('YYYY-MM-DDTHH:mm:ssZ'),
+      updatedAt: null,
     });
   }
 
@@ -134,6 +190,8 @@ export class UsersService {
       memberCode: getGenerateCode(),
       role: MEMBER,
       companyCode,
+      createdAt: moment().format('YYYY-MM-DDTHH:mm:ssZ'),
+      updatedAt: null,
     });
   }
 

@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { MemberRepository } from './users/user.repository';
 import Tokenpayload from './interface/token-payload.interface';
 import { userInfo } from 'os';
+import { decryptDecryptCode } from './utils/validate';
 
 @Injectable()
 export class AuthService {
@@ -15,8 +16,11 @@ export class AuthService {
     private readonly memberRepository: MemberRepository,
   ) {}
 
-  async login(user: UserDocument, response: Response) {
-    const { email } = user;
+  async login(user, response: Response) {
+    const { email } = decryptDecryptCode<{
+      email: string;
+      time: string;
+    }>(user.loginForm);
     const memberData = await this.memberRepository.getMemberInfoByEmail(email);
     // Calculate the token expiration time by adding seconds to the current date
     const expires = new Date();
@@ -31,7 +35,6 @@ export class AuthService {
     };
 
     const token = this.jwtService.sign(tokenDto);
-    console.log('🚀 ~ AuthService ~ login ~ token:', token);
 
     response.cookie('Authentication', token, {
       expires: expires,
