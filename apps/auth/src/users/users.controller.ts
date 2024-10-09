@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   Logger,
@@ -61,6 +62,18 @@ export class UsersController {
     }
   }
 
+  @Get('admin/list')
+  @UseGuards(JwtAuthGuard)
+  async getMemberByAdmin(@CurrentUser() user: UserDTO) {
+    this.logger.verbose(`${UsersController.name} - getMemberByAdmin`);
+    try {
+      return await this.userService.getMemberByAdmin(user);
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(error, 404);
+    }
+  }
+
   @Get(':email')
   @UseGuards(JwtAuthGuard)
   async getMemberDetail(
@@ -70,6 +83,19 @@ export class UsersController {
     this.logger.verbose(`${UsersController.name} - getMemberDetail`);
     try {
       return await this.userService.getMemberDetail(user, email);
+    } catch (error) {
+      this.logger.error(error);
+      return new HttpException(error, 404);
+    }
+  }
+
+  @Delete()
+  @UseGuards(JwtAuthGuard)
+  async deleteMember(@CurrentUser() user: UserDocument, @Body() body) {
+    this.logger.verbose(`${UsersController.name} - deleteMember`);
+    const { emails } = body;
+    try {
+      return await this.userService.deleteMember(user, emails);
     } catch (error) {
       this.logger.error(error);
       return new HttpException(error, 404);
