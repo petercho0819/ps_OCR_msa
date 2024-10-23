@@ -205,7 +205,6 @@ export class ReceiptService {
     { OCRName, OCRBuffer, OCRMimetype },
   ) {
     this.logger.verbose(`${ReceiptService.name} - updateReceipt`);
-    const { companyCode } = user;
 
     let imgPath: string;
     if (OCRName) {
@@ -233,57 +232,34 @@ export class ReceiptService {
     });
   }
 
-  async createReceipt(
-    user: UserDTO,
-    uploadReceiptDto: UploadReceiptDTO,
-    { OCRName, OCRBuffer, OCRMimetype },
-  ) {
-    this.logger.verbose(`${ReceiptService.name} - createReceipt`);
-    const { memberCode, companyCode } = user;
+  async uploadReceiptImage({ OCRName, OCRBuffer, OCRMimetype }) {
+    this.logger.verbose(`${ReceiptService.name} - uploadReceiptImage`);
+    let imgPath: string;
+    if (OCRName && OCRBuffer) {
+      const key = `receipt_${moment().format(
+        'YYYY_MM_DD_HH_mm_ss_SSS',
+      )}_${getGenerateCode()}`;
+      const uploadResult = await this.amazonService.uploadFile(
+        key,
+        OCRBuffer,
+        OCRMimetype,
+        'ocrImage',
+      );
 
-    // file 절대경로로 업데이트
-    // 1. aws에 업로드
-    try {
-      let imgPath: string;
-      if (OCRName && OCRBuffer) {
-        const key = `receipt_${moment().format(
-          'YYYY-MM-DD HH:mm:ss:SSS',
-        )}_${getGenerateCode()}`;
-        const uploadResult = await this.amazonService.uploadFile(
-          key,
-          OCRBuffer,
-          OCRMimetype,
-          'ocrImage',
-        );
-
-        if (uploadResult.Location) {
-          imgPath = uploadResult.Location;
-        } else {
-          throw new Error('Failed to get upload location from S3');
-        }
+      if (uploadResult.Location) {
+        imgPath = uploadResult.Location;
+        return imgPath;
+      } else {
+        throw new Error('Failed to get upload location from S3');
       }
-      // 2. db에 저장
-      await this.receiptRepository.createReceipt({
-        ...uploadReceiptDto,
-        numberOfPeople: Number(uploadReceiptDto.numberOfPeople),
-        price: Number(uploadReceiptDto.price),
-        memberCode,
-        imgPath,
-        receiptDate: moment(uploadReceiptDto.receiptDate).format('YYYY-MM-DD'),
-        year: moment(uploadReceiptDto.receiptDate).format('YYYY'),
-        month: moment(uploadReceiptDto.receiptDate).format('MM'),
-        companyCode,
-      });
       // naver api로 분석하기
       // 1. img 파일을 폴더에 업로드
-      const directoryPath = path.join(__dirname, '../../../receipt-uploads');
-      const filePath = path.join(directoryPath, 'receipt');
-      if (!fs.existsSync(directoryPath)) {
-        fs.mkdirSync(directoryPath);
-      }
-      await fs.promises.writeFile(filePath, OCRBuffer);
-      //  2. 업로드된 파일을 가지고 base64로 변환
-      const data = await fs.promises.readFile(filePath);
+      // const directoryPath = path.join(__dirname, '../../../receipt-uploads');
+      // const filePath = path.join(directoryPath, 'receipt');
+      // if (!fs.existsSync(directoryPath)) {
+      //   fs.mkdirSync(directoryPath);
+      // }
+
       // const base64Encoded = data.toString('base64');
 
       // const naverOcrDto: NaverOcrDTO = {
@@ -326,6 +302,29 @@ export class ReceiptService {
       //   totalPrice: money,
       //   date: `${year}-${month}-${day}`,
       // };
+    }
+  }
+
+  async createReceipt(user: UserDTO, uploadReceiptDto: UploadReceiptDTO) {
+    this.logger.verbose(`${ReceiptService.name} - createReceipt`);
+    const { memberCode, companyCode } = user;
+
+    const createReceiptDto = uploadReceiptDto.receiptList.map((v) => {
+      return {
+        ...v,
+        numberOfPeople: Number(v.numberOfPeople),
+        price: Number(v.price),
+        memberCode,
+        imgPath: v.imgPath,
+        receiptDate: moment(v.receiptDate).format('YYYY-MM-DD'),
+        year: moment(v.receiptDate).format('YYYY'),
+        month: moment(v.receiptDate).format('MM'),
+        companyCode,
+      };
+    });
+
+    try {
+      await this.receiptRepository.createReceipt(createReceiptDto);
     } catch (e) {
       this.logger.error(e);
     }

@@ -11,6 +11,10 @@ import { INVALID_RECEIPT_TYPE, receiptType } from '../constant';
 import { ReceiptType } from '../interface';
 
 export class UploadReceiptDTO {
+  receiptList: ReceiptDTO[];
+}
+
+export class ReceiptDTO {
   @IsNotEmpty()
   @IsString()
   receiptDate: string;
@@ -34,6 +38,10 @@ export class UploadReceiptDTO {
   @IsString()
   @IsOptional()
   memo: string;
+
+  @IsString()
+  @IsOptional()
+  imgPath: string;
 }
 
 export class UploadReceiptSVCDTO extends UploadReceiptDTO {

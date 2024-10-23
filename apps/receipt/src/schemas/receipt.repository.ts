@@ -125,7 +125,7 @@ export class ReceiptRepository extends AbstractRepository<ReceiptDocument> {
     return await this.uploadModel.find();
   }
 
-  async createReceipt(dto: UploadReceiptSVCDTO) {
+  async createReceipt(dto) {
     this.logger.verbose(`${ReceiptRepository.name} - createReceipt`);
     this.logger.log(`createReceipt: ${JSON.stringify(dto)} `);
 

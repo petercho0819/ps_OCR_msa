@@ -116,24 +116,24 @@ export class ReceiptController {
     }
   }
 
-  @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
+  @Post()
   async createReceipt(
     @CurrentUser() user: UserDTO,
-    @Body() body,
-    @UploadedFile() { originalname, buffer, mimetype }: Express.Multer.File,
+    @Body() body: UploadReceiptDTO,
   ) {
     this.logger.verbose(`${ReceiptController.name} - createReceipt`);
-    this.logger.log(`uploadReceiptDto - ${JSON.stringify(body)}`);
 
-    const dto = plainToInstance(UploadReceiptDTO, body);
+    return await this.fileUploadService.createReceipt(user, body);
+  }
 
-    const errors = await validate(dto);
-    console.log('🚀 ~ ReceiptController ~ errors:', errors);
-    if (errors.length > 0) {
-      return new NotFoundException(errors);
-    }
-    return await this.fileUploadService.createReceipt(user, body, {
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadReceiptImage(
+    @UploadedFile() { originalname, buffer, mimetype }: Express.Multer.File,
+  ) {
+    this.logger.verbose(`${ReceiptController.name} - uploadReceiptImage`);
+
+    return await this.fileUploadService.uploadReceiptImage({
       OCRName: originalname || '',
       OCRBuffer: buffer || Buffer.from(''),
       OCRMimetype: mimetype || '',
