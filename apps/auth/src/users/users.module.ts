@@ -25,10 +25,6 @@ import { ConfigService } from '@nestjs/config';
             options: {
               urls: [host],
               queue: queueName,
-              queueOptions: {
-                durable: true,
-              },
-              heartbeat: 30,
             },
           };
         },

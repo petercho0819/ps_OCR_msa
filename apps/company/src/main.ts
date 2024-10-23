@@ -13,13 +13,6 @@ async function bootstrap() {
     options: {
       urls: [configService.get<string>('RABBITMQ_URL')],
       queue: configService.get<string>('COMPANY_QUEUE'),
-      queueOptions: {
-        durable: true,
-      },
-      prefetchCount: 1,
-      // noAck: false,
-      persistent: true,
-      // 재연결 시도 설정 추가
     },
   });
   app.useGlobalPipes(
@@ -34,6 +27,11 @@ async function bootstrap() {
     optionsSuccessStatus: 200,
   });
   await app.listen(configService.get<number>('PORT'));
+
+  console.log(
+    'company connection succeed port number : ',
+    configService.get('HTTP_PORT'),
+  );
 
   await app.startAllMicroservices();
 }

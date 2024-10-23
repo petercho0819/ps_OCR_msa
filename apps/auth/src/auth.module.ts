@@ -21,7 +21,6 @@ import { MemberRepository } from './users/user.repository';
     ]),
     ConfigModule.forRoot({
       isGlobal: true,
-      // envFilePath: './apps/user/.env',
       validationSchema: Joi.object({
         JWT_EXPIRATION: Joi.string().required(),
         SECRET_OR_KEY: Joi.string().required(),
@@ -30,7 +29,6 @@ import { MemberRepository } from './users/user.repository';
         AUTH_QUEUE: Joi.string().required(),
         RABBIT_COMPANY_URL: Joi.string().required(),
         COMPANY_QUEUE: Joi.string().required(),
-        // TCP_PORT: Joi.number().required(),
       }),
     }),
     JwtModule.registerAsync({

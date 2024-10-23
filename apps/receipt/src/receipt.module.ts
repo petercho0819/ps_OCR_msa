@@ -42,13 +42,6 @@ import { HttpModule } from '@nestjs/axios';
           options: {
             urls: [configService.get<string>('AUTH_RMQ_URL')],
             queue: configService.get<string>('AUTH_QUEUE'),
-            queueOptions: {
-              durable: true,
-            },
-            heartbeat: 60,
-            prefetchCount: 1,
-            noAck: false,
-            persistent: true,
           },
         }),
         inject: [ConfigService],
@@ -60,13 +53,6 @@ import { HttpModule } from '@nestjs/axios';
           options: {
             urls: [configService.get<string>('COMPANY_RMQ_URL')],
             queue: configService.get<string>('COMPANY_QUEUE'),
-            queueOptions: {
-              durable: true,
-            },
-            heartbeat: 60,
-            prefetchCount: 1,
-            noAck: false,
-            persistent: true,
           },
         }),
         inject: [ConfigService],

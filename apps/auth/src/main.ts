@@ -11,22 +11,13 @@ async function bootstrap() {
   dotenv.config();
   const app = await NestFactory.create(AuthModule);
   const configService = app.get(ConfigService);
-  console.log(
-    'configService.get<string>(',
-    configService.get<string>('RABBIT_AUTH_URL'),
-  );
+
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
       urls: [configService.get<string>('RABBIT_AUTH_URL')],
       queue: configService.get<string>('AUTH_QUEUE'),
-      queueOptions: {
-        durable: true,
-        autoCreate: true,
-      },
-      prefetchCount: 1,
-      // noAck: false,
-      persistent: true,
+      queueOptions: {},
     },
   });
 
@@ -43,12 +34,9 @@ async function bootstrap() {
       whitelist: true,
     }),
   );
-  // app.useLogger(app.get(Logger));
-
-  console.log('Microservice connected successfully');
 
   console.log(
-    '🚀 ~ bootstrap auth ~ HTTP_PORT:',
+    'auth connection succeed port number : ',
     configService.get('HTTP_PORT'),
   );
   await app.startAllMicroservices();
