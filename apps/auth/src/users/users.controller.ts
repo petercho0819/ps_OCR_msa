@@ -114,4 +114,11 @@ export class UsersController {
 
     return this.userService.getUserByUserCodes(data);
   }
+
+  @MessagePattern('get_email_for_notification')
+  async getEmailForNotification(@Payload() companyCode) {
+    this.logger.verbose(`${UsersController.name} - getEmailForNotification`);
+
+    return this.userService.getEmailForNotification(companyCode);
+  }
 }

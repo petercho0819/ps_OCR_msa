@@ -15,9 +15,12 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
-      urls: [configService.get<string>('RABBIT_AUTH_URL')],
+      urls: [configService.get<string>('RABBITMQ_URL')],
       queue: configService.get<string>('AUTH_QUEUE'),
-      queueOptions: {},
+      queueOptions: {
+        durable: true, // 이 부분을 true로 변경
+      },
+      persistent: true,
     },
   });
 

@@ -14,6 +14,14 @@ export class MemberRepository extends AbstractRepository<UserDocument> {
     super(userModel);
   }
 
+  async getEmailForNotification(companyCode: string) {
+    this.logger.verbose(`${MemberRepository.name} - getEmailForNotification`);
+
+    return await this.userModel
+      .find({ companyCode }, { companyCode: 1, email: 1, _id: -1 })
+      .exec();
+  }
+
   async deleteMember(companyCode: string, email: any) {
     this.logger.verbose(`${MemberRepository.name} - deleteMember`);
 

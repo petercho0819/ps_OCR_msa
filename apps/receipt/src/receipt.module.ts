@@ -20,9 +20,8 @@ import { HttpModule } from '@nestjs/axios';
       validationSchema: Joi.object({
         MONGODB_URI: Joi.string().required(),
         PORT: Joi.number().required(),
-        AUTH_RMQ_URL: Joi.string().required(),
+        RABBITMQ_URL: Joi.string().required(),
         AUTH_QUEUE: Joi.string().required(),
-        COMPANY_RMQ_URL: Joi.string().required(),
         COMPANY_QUEUE: Joi.string().required(),
       }),
     }),
@@ -40,8 +39,11 @@ import { HttpModule } from '@nestjs/axios';
         useFactory: (configService: ConfigService) => ({
           transport: Transport.RMQ,
           options: {
-            urls: [configService.get<string>('AUTH_RMQ_URL')],
+            urls: [configService.get<string>('RABBITMQ_URL')],
             queue: configService.get<string>('AUTH_QUEUE'),
+            queueOptions: {
+              durable: true,
+            },
           },
         }),
         inject: [ConfigService],
@@ -51,7 +53,7 @@ import { HttpModule } from '@nestjs/axios';
         useFactory: (configService: ConfigService) => ({
           transport: Transport.RMQ,
           options: {
-            urls: [configService.get<string>('COMPANY_RMQ_URL')],
+            urls: [configService.get<string>('RABBITMQ_URL')],
             queue: configService.get<string>('COMPANY_QUEUE'),
           },
         }),
