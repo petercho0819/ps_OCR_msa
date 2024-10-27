@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { NotificationController } from './notification.controller';
-import { AUTH_SERVICE, DatabaseModule } from '@app/common';
+import { AUTH_SERVICE, DatabaseModule, EMAIL_SERVICE } from '@app/common';
 import {
   Notification,
   NotificationSchema,
@@ -11,7 +11,6 @@ import { NotificationRepository } from './schemas/notification.repository';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { NotificationService } from './notification.service';
-import { EmailService } from './email/email.service';
 
 @Module({
   imports: [
@@ -22,9 +21,27 @@ import { EmailService } from './email/email.service';
     ClientsModule.registerAsync([
       {
         name: AUTH_SERVICE,
+        imports: [ConfigModule],
         useFactory: (configService: ConfigService) => {
           const host = configService.get('RABBITMQ_URL');
           const queueName = configService.get('AUTH_QUEUE');
+
+          return {
+            transport: Transport.RMQ,
+            options: {
+              urls: [host],
+              queue: queueName,
+            },
+          };
+        },
+        inject: [ConfigService],
+      },
+      {
+        name: EMAIL_SERVICE,
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => {
+          const host = configService.get('RABBITMQ_URL');
+          const queueName = configService.get('EMAIL_QUEUE');
 
           return {
             transport: Transport.RMQ,
@@ -62,6 +79,6 @@ import { EmailService } from './email/email.service';
     }),
   ],
   controllers: [NotificationController],
-  providers: [NotificationService, EmailService, NotificationRepository],
+  providers: [NotificationService, NotificationRepository],
 })
 export class NotificationModule {}

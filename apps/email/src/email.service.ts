@@ -1,10 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { emailTemplates, gmailTransport } from './utils/mailer.utils';
 import * as moment from 'moment';
 
 @Injectable()
 export class EmailService {
+  private readonly logger = new Logger(EmailService.name);
+
   async sendBatchEmails(users) {
+    this.logger.verbose(`${EmailService.name} - sendBatchEmails`);
+
     const failedEmails: { email: string; companyCode: string; error: any }[] =
       [];
     const template = emailTemplates.reminder;

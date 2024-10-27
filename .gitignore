@@ -7,13 +7,19 @@ package-lock.json
 /apps/receipt/.env
 /apps/auth/.env
 /apps/company/.env
+/apps/notification/.env
+/apps/email/.env
 /apps/receipt/.env.prod
 /apps/auth/.env.prod
 /apps/company/.env.prod
+/apps/notification/.env.prod
+/apps/email/.env.prod
 
 /apps/receipt/Docker
 /apps/auth/Docker
 /apps/company/Docker
+/apps/notification/Docker
+/apps/email/Docker
 
 kube-manifests/*
 

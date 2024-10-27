@@ -8,9 +8,8 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import * as moment from 'moment';
 import { NotificationRepository } from './schemas/notification.repository';
 import { ClientProxy } from '@nestjs/microservices';
-import { AUTH_SERVICE } from '@app/common/constant';
-import { catchError, firstValueFrom, of, timeout } from 'rxjs';
-import { EmailService } from './email/email.service';
+import { AUTH_SERVICE, EMAIL_SERVICE } from '@app/common/constant';
+import { catchError, firstValueFrom, lastValueFrom, of, timeout } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import { chunk } from 'lodash';
 
@@ -24,8 +23,8 @@ export class NotificationService implements OnApplicationBootstrap {
 
   constructor(
     @Inject(AUTH_SERVICE) private readonly user_service: ClientProxy,
+    @Inject(EMAIL_SERVICE) private readonly email_service: ClientProxy,
     private readonly notificationRepository: NotificationRepository,
-    private readonly emailService: EmailService,
     private readonly configService: ConfigService,
   ) {
     this.batchSize = this.configService.get<number>('EMAIL_BATCH_SIZE', 1000);
@@ -40,12 +39,19 @@ export class NotificationService implements OnApplicationBootstrap {
     );
   }
 
-  onApplicationBootstrap() {
-    this.init();
-  }
-
-  async init() {
-    await this.sendEmailForUpcomingReceiptDay();
+  async onApplicationBootstrap() {
+    try {
+      // RabbitMQ 연결 확인
+      await Promise.all([
+        this.user_service.connect(),
+        this.email_service.connect(),
+      ]);
+      this.sendEmailForUpcomingReceiptDay();
+      this.logger.log('Successfully connected to RabbitMQ services');
+    } catch (error) {
+      this.logger.error('Failed to connect to RabbitMQ services:', error);
+      // 선택적: 프로세스 종료 또는 다른 에러 처리
+    }
   }
 
   @Cron('0 9 * * *', { name: 'sendEmailForUpcomingReceiptDay' })
@@ -87,41 +93,93 @@ export class NotificationService implements OnApplicationBootstrap {
       // await this.notifyError(error, processId);
     }
   }
+
   async processCompanyEmails(companyCode: string) {
     try {
-      // 2. User 서비스에 회사 코드에 해당하는 이메일 목록 요청
-      const users = await this.user_service
-        .send('get_email_for_notification', companyCode)
-        .toPromise();
+      this.logger.debug(
+        `Starting to process emails for company: ${companyCode}`,
+      );
 
-      console.log(`Retrieved ${users.length} users for company ${companyCode}`);
+      // User 서비스에서 이메일 목록 가져오기
+      const usersResponse = await lastValueFrom(
+        this.user_service.send('get_email_for_notification', companyCode).pipe(
+          timeout(this.userServiceTimeout),
+          catchError((error) => {
+            this.logger.error(
+              `Failed to fetch users for company ${companyCode}:`,
+              error,
+            );
+            return of(null);
+          }),
+        ),
+      );
 
-      // 3. 500명씩 분할하여 처리
-      const userChunks = chunk(users, 500);
+      if (!usersResponse) {
+        this.logger.error(`No users retrieved for company ${companyCode}`);
+        return;
+      }
+
+      const users = Array.isArray(usersResponse) ? usersResponse : [];
+      this.logger.log(
+        `Retrieved ${users.length} users for company ${companyCode}`,
+      );
+
+      if (users.length === 0) {
+        return;
+      }
+
+      // 유저 목록을 청크로 나누기
+      const userChunks = chunk(users, this.batchSize);
+      this.logger.debug(
+        `Split ${users.length} users into ${userChunks.length} batches`,
+      );
 
       for (const [index, userChunk] of userChunks.entries()) {
         try {
-          await this.emailService.sendBatchEmails(userChunk);
-          console.log(
-            `Processed batch ${index + 1}/${
+          const messagePayload = {
+            users: userChunk,
+            companyCode,
+            batchIndex: index + 1,
+            totalBatches: userChunks.length,
+            timestamp: new Date().toISOString(),
+          };
+
+          // RabbitMQ로 메시지 전송
+          await lastValueFrom(
+            this.email_service.emit('send_batch_emails', messagePayload).pipe(
+              timeout(5000),
+              catchError((error) => {
+                const errorMessage = error.message || JSON.stringify(error);
+                this.logger.error(
+                  `Failed to queue batch ${
+                    index + 1
+                  } for company ${companyCode}: ${errorMessage}`,
+                  error.stack,
+                );
+                return of(null);
+              }),
+            ),
+          );
+
+          this.logger.log(
+            `Successfully queued batch ${index + 1}/${
               userChunks.length
             } for company ${companyCode}`,
           );
 
-          // Rate limiting: 배치 간 1초 대기
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          // Rate limiting
+          await new Promise((resolve) => setTimeout(resolve, 100));
         } catch (error) {
-          console.error(
-            `Failed to process batch ${index + 1} for company ${companyCode}:`,
-            error,
+          this.logger.error(
+            `Error processing batch ${index + 1} for company ${companyCode}:`,
+            error.stack || error,
           );
-          // 실패한 배치 기록 (재시도를 위해)
         }
       }
     } catch (error) {
-      console.error(
+      this.logger.error(
         `Failed to process emails for company ${companyCode}:`,
-        error,
+        error.stack || error,
       );
     }
   }

@@ -5,8 +5,10 @@ import * as nodemailer from 'nodemailer';
 import * as handlebars from 'handlebars';
 
 // 환경변수 검증
-const GMAIL_USER = process.env.GMAIL_USER;
-const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
+// const GMAIL_USER = process.env.GMAIL_USER;
+// const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
+const GMAIL_USER = 'petercho92@gmail.com';
+const GMAIL_APP_PASSWORD = 'qcpcjmcmlgsmhfxd';
 
 if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
   throw new Error('Missing required Gmail configuration');
@@ -32,9 +34,8 @@ export const loadEmailTemplate = (
     const templatePath = path.join(
       process.cwd(),
       'apps',
-      'notification',
-      'src',
       'email',
+      'src',
       'template',
       'notification',
       `${templateName}.html`,
