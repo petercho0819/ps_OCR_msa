@@ -29,10 +29,6 @@ export class SettingController {
   }
   @Post('date')
   async updateReceiptRemindDate(@CurrentUser() user: UserDTO, @Body() body) {
-    console.log(
-      '🚀 ~ SettingController ~ updateReceiptRemindDate ~ body:',
-      body,
-    );
     this.logger.verbose(`${SettingController.name} - updateReceiptRemindDate`);
     try {
       return await this.settingService.updateReceiptRemindDate(user, body);
