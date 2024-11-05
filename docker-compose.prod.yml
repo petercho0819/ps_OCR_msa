@@ -79,7 +79,7 @@ services:
     env_file:
       - ./apps/setting/.env.prod
     ports:
-      - "4005:4005"
+      - "4004:4004"
     depends_on:
       - rabbitmq
       - mongo
