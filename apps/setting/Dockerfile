@@ -13,7 +13,7 @@ RUN npm install -g && npm install --force
 COPY . .
 
 # Build the application
-RUN npm run build:notification
+RUN npm run build:setting
 
 # Create a production image
 FROM node:alpine as production
@@ -35,4 +35,4 @@ COPY --from=development /usr/src/app/dist ./dist
 # Copy the rest of the application code
 COPY . .
 
-CMD [ "node", "dist/apps/notification/main" ]
+CMD [ "node", "dist/apps/setting/main" ]

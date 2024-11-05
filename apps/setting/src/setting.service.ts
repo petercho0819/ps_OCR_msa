@@ -6,16 +6,17 @@ import {
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import * as moment from 'moment';
-import { NotificationRepository } from './schemas/notification.repository';
+import { SettingRepository } from './schemas/setting.repository';
 import { ClientProxy } from '@nestjs/microservices';
 import { AUTH_SERVICE, EMAIL_SERVICE } from '@app/common/constant';
 import { catchError, firstValueFrom, lastValueFrom, of, timeout } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import { chunk } from 'lodash';
+import { UserDTO } from '@app/common';
 
 @Injectable()
-export class NotificationService implements OnApplicationBootstrap {
-  private readonly logger = new Logger(NotificationService.name);
+export class SettingService implements OnApplicationBootstrap {
+  private readonly logger = new Logger(SettingService.name);
   private readonly batchSize: number;
   private readonly maxRetries: number;
   private readonly userServiceTimeout: number;
@@ -24,7 +25,7 @@ export class NotificationService implements OnApplicationBootstrap {
   constructor(
     @Inject(AUTH_SERVICE) private readonly user_service: ClientProxy,
     @Inject(EMAIL_SERVICE) private readonly email_service: ClientProxy,
-    private readonly notificationRepository: NotificationRepository,
+    private readonly settingRepository: SettingRepository,
     private readonly configService: ConfigService,
   ) {
     this.batchSize = this.configService.get<number>('EMAIL_BATCH_SIZE', 1000);
@@ -39,7 +40,31 @@ export class NotificationService implements OnApplicationBootstrap {
     );
   }
 
+  async updateReceiptRemindDate(user: UserDTO, body) {
+    this.logger.verbose(`${SettingService.name} - getReceiptRemindDate`);
+    const { companyCode } = user;
+    return await this.settingRepository.updateReceiptRemindDate(
+      companyCode,
+      body,
+    );
+  }
+
+  async getReceiptRemindDate(user: UserDTO) {
+    this.logger.verbose(`${SettingService.name} - getReceiptRemindDate`);
+    const { companyCode } = user;
+
+    const receiptRemindDate = await this.settingRepository.getReceiptRemindDate(
+      companyCode,
+    );
+
+    if (!receiptRemindDate)
+      return await this.settingRepository.createReceiptRemindDate(companyCode);
+    else return receiptRemindDate;
+  }
+
   async onApplicationBootstrap() {
+    this.logger.verbose(`${SettingService.name} - onApplicationBootstrap`);
+
     try {
       // RabbitMQ 연결 확인
       await Promise.all([
@@ -66,8 +91,9 @@ export class NotificationService implements OnApplicationBootstrap {
       // await this.metricsService.startProcess(processId);
 
       const today = moment().format('DD');
-      const companies =
-        await this.notificationRepository.getUpcomingReceiptDate(today);
+      const companies = await this.settingRepository.getUpcomingReceiptDate(
+        today,
+      );
 
       if (!companies.length) {
         this.logger.debug('No companies scheduled for notification today');

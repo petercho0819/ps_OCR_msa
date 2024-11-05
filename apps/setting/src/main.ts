@@ -1,11 +1,11 @@
 import { NestFactory } from '@nestjs/core';
-import { NotificationModule } from './notification.module';
 import { ConfigService } from '@nestjs/config';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ValidationPipe } from '@nestjs/common';
+import { SettingModule } from './setting.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(NotificationModule);
+  const app = await NestFactory.create(SettingModule);
   const configService = app.get(ConfigService);
   app.useGlobalPipes(
     new ValidationPipe({
@@ -21,7 +21,7 @@ async function bootstrap() {
   await app.listen(configService.get<number>('PORT'));
 
   console.log(
-    'notification connection succeed port number : ',
+    'setting connection succeed port number : ',
     configService.get('PORT'),
   );
 

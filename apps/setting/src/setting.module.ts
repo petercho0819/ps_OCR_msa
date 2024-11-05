@@ -1,23 +1,18 @@
 import { Module } from '@nestjs/common';
-import { NotificationController } from './notification.controller';
+import { SettingController } from './setting.controller';
 import { AUTH_SERVICE, DatabaseModule, EMAIL_SERVICE } from '@app/common';
-import {
-  Notification,
-  NotificationSchema,
-} from './schemas/notification.schema';
+import { Setting, SettingSchema } from './schemas/setting.schema';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
-import { NotificationRepository } from './schemas/notification.repository';
+import { SettingRepository } from './schemas/setting.repository';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
-import { NotificationService } from './notification.service';
+import { SettingService } from './setting.service';
 
 @Module({
   imports: [
     DatabaseModule,
-    DatabaseModule.forFeature([
-      { name: Notification.name, schema: NotificationSchema },
-    ]),
+    DatabaseModule.forFeature([{ name: Setting.name, schema: SettingSchema }]),
     ClientsModule.registerAsync([
       {
         name: AUTH_SERVICE,
@@ -78,7 +73,7 @@ import { NotificationService } from './notification.service';
       }),
     }),
   ],
-  controllers: [NotificationController],
-  providers: [NotificationService, NotificationRepository],
+  controllers: [SettingController],
+  providers: [SettingService, SettingRepository],
 })
-export class NotificationModule {}
+export class SettingModule {}

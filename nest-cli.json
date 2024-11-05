@@ -45,13 +45,13 @@
         "tsConfigPath": "apps/company/tsconfig.app.json"
       }
     },
-    "notification": {
+    "setting": {
       "type": "application",
-      "root": "apps/notification",
+      "root": "apps/setting",
       "entryFile": "main",
-      "sourceRoot": "apps/notification/src",
+      "sourceRoot": "apps/setting/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/notification/tsconfig.app.json"
+        "tsConfigPath": "apps/setting/tsconfig.app.json"
       }
     },
     "email": {
