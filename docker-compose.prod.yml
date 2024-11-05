@@ -52,6 +52,42 @@ services:
     networks:
       - app-network
 
+  email:
+    build:
+      context: .
+      dockerfile: apps/email/Dockerfile
+      target: development
+    command: npm run start:dev email
+    env_file:
+      - apps/email/.env
+    ports:
+      - '4005:4005'
+    volumes:
+      - .:/usr/src/app
+    depends_on:
+      - rabbitmq
+      - mongo
+    networks:
+      - app-network 
+      
+  setting:
+    build:
+      context: .
+      dockerfile: apps/setting/Dockerfile
+      target: development
+    command: npm run start:dev setting
+    env_file:
+      - apps/setting/.env
+    ports:
+      - '4004:4004'
+    volumes:
+      - .:/usr/src/app
+    depends_on:
+      - rabbitmq
+      - mongo
+    networks:
+      - app-network    
+
   rabbitmq:
     image: rabbitmq:3-management
     ports:
