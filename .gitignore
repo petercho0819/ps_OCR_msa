@@ -7,9 +7,11 @@ package-lock.json
 /apps/receipt/.env
 /apps/auth/.env
 /apps/company/.env
+/apps/setting/.env
 /apps/receipt/.env.prod
 /apps/auth/.env.prod
 /apps/company/.env.prod
+/apps/setting/.env.prod
 
 /apps/receipt/Docker
 /apps/auth/Docker
