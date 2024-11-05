@@ -22,11 +22,8 @@ export class JwtAuthGuard implements CanActivate {
     this.authClient = ClientProxyFactory.create({
       transport: Transport.RMQ,
       options: {
-        urls: ['amqp://rabbitmq:5672'], // Docker 네트워크에서의 RabbitMQ 서비스 이름
+        urls: ['amqp://rabbitmq:5672'],
         queue: 'auth_queue', // 인증 서비스 큐 이름
-        queueOptions: {
-          durable: true,
-        },
       },
     });
   }

@@ -8,14 +8,18 @@ package-lock.json
 /apps/auth/.env
 /apps/company/.env
 /apps/setting/.env
+/apps/email/.env
 /apps/receipt/.env.prod
 /apps/auth/.env.prod
 /apps/company/.env.prod
 /apps/setting/.env.prod
+/apps/email/.env.prod
 
 /apps/receipt/Docker
 /apps/auth/Docker
 /apps/company/Docker
+/apps/setting/Docker
+/apps/email/Docker
 
 kube-manifests/*
 

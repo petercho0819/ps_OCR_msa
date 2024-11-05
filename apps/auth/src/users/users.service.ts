@@ -25,8 +25,52 @@ export class UsersService {
 
   constructor(private readonly memberRepository: MemberRepository) {}
 
+  async getEmailForNotification(companyCode) {
+    this.logger.verbose(`${UsersService.name} - getEmailForNotification`);
+    console.log(
+      '🚀 ~ UsersService ~ getEmailForNotification ~ data:',
+      companyCode,
+    );
+
+    const users = await this.memberRepository.getEmailForNotification(
+      companyCode,
+    );
+    const companyCodeList = users.map((v) => v.companyCode);
+
+    const company = this.company_service
+      .send('get_company', companyCodeList)
+      .pipe(
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        tap((res) => {}),
+        catchError((e) => {
+          console.error('Error in catchError:', e);
+          return of(null); // Handle error and return a default value or empty observable
+        }),
+        switchMap((companyData) => {
+          // Join user data with company data
+          const joinedData = users.map((user) => {
+            const company = companyData.find(
+              (company) => company.companyCode === user.companyCode,
+            );
+            return {
+              // _id: user._id,
+              email: user.email,
+              name: user.name,
+              role: user.role,
+              memberCode: user.memberCode,
+              companyCode: user.companyCode,
+              createdAt: user.createdAt,
+              companyName: company ? company.companyName : '', // Set companyName or empty string
+            };
+          });
+          this.logger.debug(`Joined data: ${JSON.stringify(joinedData)}`);
+          return of(joinedData);
+        }),
+      );
+    return company;
+  }
+
   async deleteMember(user: UserDocument, email: any) {
-    console.log('🚀 ~ UsersService ~ deleteMember ~ email:', email);
     this.logger.verbose(`${UsersService.name} - deleteMember`);
     const { companyCode } = user;
     return await this.memberRepository.deleteMember(companyCode, email);

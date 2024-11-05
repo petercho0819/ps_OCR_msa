@@ -44,6 +44,24 @@
       "compilerOptions": {
         "tsConfigPath": "apps/company/tsconfig.app.json"
       }
+    },
+    "setting": {
+      "type": "application",
+      "root": "apps/setting",
+      "entryFile": "main",
+      "sourceRoot": "apps/setting/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/setting/tsconfig.app.json"
+      }
+    },
+    "email": {
+      "type": "application",
+      "root": "apps/email",
+      "entryFile": "main",
+      "sourceRoot": "apps/email/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/email/tsconfig.app.json"
+      }
     }
   }
 }

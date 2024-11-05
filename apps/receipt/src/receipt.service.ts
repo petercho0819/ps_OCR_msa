@@ -54,7 +54,7 @@ export class ReceiptService {
       );
 
     const userCodes = [...new Set(receipt.map((v) => v.memberCode))];
-
+    console.log('this.userService', this.userService);
     const result = await forkJoin({
       receipts: Promise.resolve(receipt),
       users: this.userService.send('get_user_by_user_code', userCodes).pipe(

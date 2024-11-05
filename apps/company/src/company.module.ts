@@ -26,7 +26,6 @@ import { CompanyRepository } from './schemas/company.repository';
         PORT: Joi.number().required(),
         COMPANY_QUEUE: Joi.string().required(),
         RABBITMQ_URL: Joi.string().required(),
-        // STRIPE_SECRET_KEY: Joi.string().required(), //we will set up this on step 4
       }),
     }),
   ],
