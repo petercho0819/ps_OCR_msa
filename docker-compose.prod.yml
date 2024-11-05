@@ -56,37 +56,35 @@ services:
     build:
       context: .
       dockerfile: apps/email/Dockerfile
-      target: development
-    command: npm run start:dev email
+      target: production
+    environment:
+      - NODE_ENV=production
     env_file:
-      - apps/email/.env
+      - ./apps/email/.env.prod
     ports:
-      - '4005:4005'
-    volumes:
-      - .:/usr/src/app
+      - "4005:4005"
     depends_on:
       - rabbitmq
       - mongo
     networks:
-      - app-network 
+      - app-network
       
   setting:
     build:
       context: .
       dockerfile: apps/setting/Dockerfile
-      target: development
-    command: npm run start:dev setting
+      target: production
+    environment:
+      - NODE_ENV=production
     env_file:
-      - apps/setting/.env
+      - ./apps/setting/.env.prod
     ports:
-      - '4004:4004'
-    volumes:
-      - .:/usr/src/app
+      - "4005:4005"
     depends_on:
       - rabbitmq
       - mongo
     networks:
-      - app-network    
+      - app-network
 
   rabbitmq:
     image: rabbitmq:3-management
